@@ -27,12 +27,13 @@
 ## Установка
 
 Нужны: CMake ≥ 3.25, Ninja, Arm GNU Toolchain (`arm-none-eabi-gcc`), хост-компилятор
-(Clang на Mac, MinGW-w64 GCC на Windows), Python ≥ 3.12, SEGGER J-Link Software.
+(Clang на Mac, MinGW-w64 GCC на Windows), Python ≥ 3.12, SEGGER J-Link Software
+(в winget он опубликован как `NordicSemiconductor.JLink` — тот же установщик SEGGER).
 
 **Windows** (winget, после установки перезапустить терминал):
 
 ```powershell
-winget install --id Kitware.CMake --id Ninja-build.Ninja --id Arm.GnuArmEmbeddedToolchain --id BrechtSanders.WinLibs.POSIX.UCRT --id SEGGER.JLink
+winget install --id Kitware.CMake --id Ninja-build.Ninja --id Arm.GnuArmEmbeddedToolchain --id BrechtSanders.WinLibs.POSIX.UCRT --id NordicSemiconductor.JLink
 ```
 
 **Mac** (Homebrew; Clang идёт с Xcode Command Line Tools):
