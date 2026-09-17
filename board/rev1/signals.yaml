@@ -1,0 +1,56 @@
+# Сигналы платы CONTR ревизии 1 на выводах STM32, кроме реле (реле — в relays.yaml).
+# Источник — таблица сигналов checker/docs/hardware/contr.md и раздел «Уточнения».
+# Генератор порождает gen/signal_table.{h,c}: имя, вывод, направление, подтяжка, уровень при
+# старте. Имена — единый словарь протокола: DBG:PIN <имя> наладочной сборки, TEST:ALL?.
+#
+# dir:  out — выход; in — вход; dut — линия изделия: вход с подтяжкой вниз, при подаче
+#       команды — выход 1 (FW-165, FW-168).
+# pull: подтяжка, которую включает прошивка (up | down | none); аппаратная — в note.
+# init: уровень выхода в первых операциях инициализации (FW-209); для входов не задаётся.
+# Шины (SPI, I²C, USART, RMII) и линии управления цепочками SR — в hal/target, здесь их нет.
+
+signals:
+  # --- питание секций и силовика (FW-209 п. 1, п. 2) ---
+  - {name: PWRON_A,   address: PC7,  dir: out, pull: none, init: 0, note: "выключено = выход 0; включено = вывод отпущен во вход (PWRON_AB_ON_LEVEL, ревизия 1: подтянуто к 5 В)"}
+  - {name: PWRON_B,   address: PD15, dir: out, pull: none, init: 0, note: "как PWRON_A"}
+  - {name: PWRON_RSP, address: PG15, dir: out, pull: none, init: 1, note: "0 = включить (PWRON_RSP_ON_LEVEL=0); аппаратно подтянуто к 3,3 В"}
+  - {name: CS_PWR,    address: PE4,  dir: out, pull: none, init: 1, note: "CS ЦАП уставки на SPI A, активен нулём (CS_ACTIVE_LOW=1)"}
+  - {name: HLG,       address: PA0,  dir: out, pull: none, init: 0, note: "реле БП HLG; полярность уточняется на шаге 6 (предположительно 1 = включено)"}
+  # --- сбросы микросхем секций, активны нулём ---
+  - {name: ResetA0,   address: PF5,  dir: out, pull: none, init: 0, note: "AD5272 секции A в сбросе до включения секции"}
+  - {name: ResetA1,   address: PF4,  dir: out, pull: none, init: 0, note: "MCP23008 секции A"}
+  - {name: ResetB0,   address: PD11, dir: out, pull: none, init: 0, note: "AD5272 секции B"}
+  - {name: ResetB1,   address: PD14, dir: out, pull: none, init: 0, note: "MCP23008 секции B"}
+  # --- входы готовности и БП ---
+  - {name: PWROK1,    address: PE0,  dir: in,  pull: up,   note: "активный ноль; в ревизии 1 не работает (PWROK_PRESENT=0)"}
+  - {name: PWROK2,    address: PF13, dir: in,  pull: up}
+  - {name: PWROK3,    address: PD13, dir: in,  pull: up}
+  - {name: PWROK4,    address: PB2,  dir: in,  pull: up,   note: "готовность секции A; полярность ОТКРЫТО-5"}
+  - {name: PWROK5,    address: PE10, dir: in,  pull: up,   note: "готовность секции B"}
+  - {name: RSP_DC_OK, address: PG12, dir: in,  pull: none, note: "через ADuM7441; полярность ОТКРЫТО-1"}
+  - {name: RSP_ALARM, address: PG10, dir: in,  pull: none, note: "перегрев RSP; полярность ОТКРЫТО-1"}
+  # --- служебные ---
+  - {name: SR_TEST_IN, address: PB7, dir: in,  pull: down, note: "петля самопроверки SR0, приход SR0.2.E; вывод LD2"}
+  - {name: USER,      address: PC13, dir: in,  pull: none, note: "кнопка USER модуля NUCLEO, нажата = 1; удержание 5 с — сброс сети (FW-229)"}
+  - {name: LD1,       address: PB0,  dir: out, pull: none, init: 0, note: "светодиод LD1 модуля NUCLEO"}
+  # --- линии команд изделия C1…C20 (FW-209 п. 4) ---
+  - {name: C1,  address: PC8,  dir: dut, pull: down}
+  - {name: C2,  address: PC6,  dir: dut, pull: down}
+  - {name: C3,  address: PE8,  dir: dut, pull: down}
+  - {name: C4,  address: PE11, dir: dut, pull: down}
+  - {name: C5,  address: PF3,  dir: dut, pull: down}
+  - {name: C6,  address: PF11, dir: dut, pull: down}
+  - {name: C7,  address: PF10, dir: dut, pull: down}
+  - {name: C8,  address: PE7,  dir: dut, pull: down}
+  - {name: C9,  address: PE9,  dir: dut, pull: down}
+  - {name: C10, address: PG14, dir: dut, pull: down}
+  - {name: C11, address: PF12, dir: dut, pull: down}
+  - {name: C12, address: PE13, dir: dut, pull: down}
+  - {name: C13, address: PE15, dir: dut, pull: down}
+  - {name: C14, address: PE14, dir: dut, pull: down}
+  - {name: C15, address: PE12, dir: dut, pull: down}
+  - {name: C16, address: PD12, dir: dut, pull: down}
+  - {name: C17, address: PA3,  dir: dut, pull: down}
+  - {name: C18, address: PB5,  dir: dut, pull: down}
+  - {name: C19, address: PB4,  dir: dut, pull: down, note: "NJTRST: после сброса подтянут вверх функцией JTAG, отключается в FW-209 п. 3"}
+  - {name: C20, address: PB6,  dir: dut, pull: down}

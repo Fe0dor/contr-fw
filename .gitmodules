@@ -18,3 +18,7 @@
 	path = third_party/stm32g4xx_hal_driver
 	url = https://github.com/STMicroelectronics/stm32g4xx_hal_driver.git
 	shallow = true
+[submodule "third_party/lwip"]
+	path = third_party/lwip
+	url = https://github.com/lwip-tcpip/lwip.git
+	shallow = true

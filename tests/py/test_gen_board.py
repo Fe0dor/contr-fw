@@ -21,7 +21,7 @@ SCHEMA = json.loads((Path(__file__).parent / "schemas" / "interlock-table.schema
 
 @pytest.fixture(scope="module")
 def table() -> gen_board.Table:
-    return gen_board.load_table(SOURCE)
+    return gen_board.load_all()
 
 
 @pytest.fixture(scope="module")
@@ -115,7 +115,8 @@ def test_group_change_changes_checksum_and_outputs(tmp_path: Path, table: gen_bo
     changed = gen_board.load_table(_write_variant(tmp_path, mutate))
     assert changed.checksum() != table.checksum()
     before, after = gen_board.render_all(table), gen_board.render_all(changed)
-    assert all(before[k] != after[k] for k in before)
+    relay_outputs = [k for k in before if not k.startswith("signal_table")]
+    assert all(before[k] != after[k] for k in relay_outputs)
 
 
 def test_comment_does_not_change_checksum(tmp_path: Path, table: gen_board.Table) -> None:
@@ -169,6 +170,15 @@ def test_missing_groups_key_is_rejected_by_schema(plugin_file: dict) -> None:
     del broken["groups"]
     with pytest.raises(jsonschema.ValidationError):
         jsonschema.Draft202012Validator(SCHEMA).validate(broken)
+
+
+def test_signals_present_and_disjoint(table: gen_board.Table) -> None:
+    names = {sg.name for sg in table.signals}
+    assert {"PWRON_A", "PWRON_B", "PWRON_RSP", "CS_PWR", "HLG", "USER", "SR_TEST_IN", "LD1"} <= names
+    assert {f"C{i}" for i in range(1, 21)} <= names
+    assert {f"PWROK{i}" for i in range(1, 6)} <= names
+    assert not names & {r.name for r in table.relays}
+    assert not {sg.address for sg in table.signals} & {r.address for r in table.relays}
 
 
 def test_address_uniqueness_and_format(table: gen_board.Table) -> None:

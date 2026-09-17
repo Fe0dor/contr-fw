@@ -43,7 +43,10 @@ _utf8_console()
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_SOURCE = ROOT / "board" / "rev1" / "relays.yaml"
+DEFAULT_SIGNALS = ROOT / "board" / "rev1" / "signals.yaml"
 DEFAULT_OUT = ROOT / "gen"
+SIGNAL_DIRS = ("out", "in", "dut")
+PULLS = ("none", "up", "down")
 
 NAME_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_.]*$")
 GROUP_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
@@ -80,10 +83,21 @@ class Group:
 
 
 @dataclass(frozen=True)
+class Signal:
+    name: str
+    address: str
+    dir: str
+    pull: str
+    init: int | None
+    note: str = ""
+
+
+@dataclass(frozen=True)
 class Table:
     version: str
     relays: tuple[Relay, ...]
     groups: tuple[Group, ...]
+    signals: tuple[Signal, ...] = ()
 
     @property
     def max_number(self) -> int:
@@ -202,6 +216,49 @@ def load_table(path: Path) -> Table:
     return Table(version, tuple(relays), tuple(groups))
 
 
+def load_signals(path: Path, relays: tuple[Relay, ...]) -> tuple[Signal, ...]:
+    """Сигналы на выводах STM32, кроме реле; имена и адреса не пересекаются с реле."""
+    raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+    entries = raw.get("signals") if isinstance(raw, dict) else None
+    if not isinstance(entries, list) or not entries:
+        raise SourceError("signals: непустой список")
+    taken_names = {r.name.upper(): r.name for r in relays}
+    taken_addr = {r.address: r.name for r in relays}
+    out: list[Signal] = []
+    for e in entries:
+        if not isinstance(e, dict):
+            raise SourceError(f"запись сигнала не отображение: {e!r}")
+        name, address = e.get("name"), e.get("address")
+        if not isinstance(name, str) or not NAME_RE.match(name):
+            raise SourceError(f"имя сигнала {name!r} не по шаблону {NAME_RE.pattern}")
+        if name.upper() in taken_names:
+            raise SourceError(f"сигнал {name}: имя занято ({taken_names[name.upper()]})")
+        if not isinstance(address, str) or not PIN_RE.match(address):
+            raise SourceError(f"{name}: адрес {address!r} не вывод STM32")
+        if address in taken_addr:
+            raise SourceError(f"{name}: вывод {address} уже занят ({taken_addr[address]})")
+        d, pull = e.get("dir"), e.get("pull", "none")
+        if d not in SIGNAL_DIRS:
+            raise SourceError(f"{name}: dir {d!r} не из {SIGNAL_DIRS}")
+        if pull not in PULLS:
+            raise SourceError(f"{name}: pull {pull!r} не из {PULLS}")
+        init = e.get("init")
+        if d == "out":
+            if init not in (0, 1):
+                raise SourceError(f"{name}: выходу нужен init 0|1")
+        elif init is not None:
+            raise SourceError(f"{name}: init только у выходов")
+        taken_names[name.upper()] = name
+        taken_addr[address] = name
+        out.append(Signal(name, address, d, pull, init, str(e.get("note", ""))))
+    return tuple(out)
+
+
+def load_all(source: Path = DEFAULT_SOURCE, signals: Path = DEFAULT_SIGNALS) -> Table:
+    table = load_table(source)
+    return Table(table.version, table.relays, table.groups, load_signals(signals, table.relays))
+
+
 # ---------------------------------------------------------------- генерация
 
 
@@ -300,6 +357,70 @@ def gen_source(table: Table) -> str:
     return "\n".join(lines)
 
 
+def _sig_ident(name: str) -> str:
+    return "SIG_" + re.sub(r"[^A-Za-z0-9]", "_", name).upper()
+
+
+def gen_signal_header(table: Table) -> str:
+    lines = [
+        "/* Сгенерировано tools/gen_board.py из board/rev1/signals.yaml — не править руками (FW-239). */",
+        "#ifndef GEN_SIGNAL_TABLE_H",
+        "#define GEN_SIGNAL_TABLE_H",
+        "",
+        "#include <stdint.h>",
+        "",
+        f"#define SIGNAL_COUNT {len(table.signals)}",
+        "",
+        "/* dir: выход, вход, линия изделия (вход с подтяжкой вниз, при команде — выход 1) */",
+        "enum signal_dir { SIGNAL_OUT = 0, SIGNAL_IN = 1, SIGNAL_DUT = 2 };",
+        "enum signal_pull { SIGNAL_PULL_NONE = 0, SIGNAL_PULL_UP = 1, SIGNAL_PULL_DOWN = 2 };",
+        "",
+        "enum signal_id {",
+    ]
+    for sg in table.signals:
+        lines.append(f"    {_sig_ident(sg.name)},")
+    lines += [
+        "};",
+        "",
+        "struct signal_desc {",
+        "    const char *name;",
+        "    const char *address;",
+        "    uint8_t port;   /* 0 = A */",
+        "    uint8_t pin;",
+        "    uint8_t dir;    /* enum signal_dir */",
+        "    uint8_t pull;   /* enum signal_pull */",
+        "    uint8_t init;   /* уровень выхода при старте; для входов 0 */",
+        "};",
+        "",
+        "extern const struct signal_desc signal_table[SIGNAL_COUNT];",
+        "",
+        "#endif /* GEN_SIGNAL_TABLE_H */",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def gen_signal_source(table: Table) -> str:
+    lines = [
+        "/* Сгенерировано tools/gen_board.py из board/rev1/signals.yaml — не править руками (FW-239). */",
+        '#include "signal_table.h"',
+        "",
+        "const struct signal_desc signal_table[SIGNAL_COUNT] = {",
+    ]
+    dirs = {"out": "SIGNAL_OUT", "in": "SIGNAL_IN", "dut": "SIGNAL_DUT"}
+    pulls = {"none": "SIGNAL_PULL_NONE", "up": "SIGNAL_PULL_UP", "down": "SIGNAL_PULL_DOWN"}
+    for sg in table.signals:
+        m = PIN_RE.match(sg.address)
+        assert m
+        port, pin = ord(m.group(1)) - ord("A"), int(m.group(2))
+        lines.append(
+            f"    [{_sig_ident(sg.name)}] = {{{_c_str(sg.name)}, {_c_str(sg.address)}, {port}, {pin}, "
+            f"{dirs[sg.dir]}, {pulls[sg.pull]}, {sg.init or 0}}},"
+        )
+    lines += ["};", ""]
+    return "\n".join(lines)
+
+
 def pair_name(group: str, first: Relay, second: Relay) -> str:
     """Имя пары по FW-126: <группа>__<реле 1>__<реле 2>, недопустимые символы → '_'."""
     a, b = sorted((first, second), key=lambda r: r.number)
@@ -346,6 +467,10 @@ def gen_numbers_json(table: Table) -> dict[str, object]:
             for r in table.relays
         ],
         "groups": [{"name": g.name, "relays": [r.name for r in g.relays]} for g in table.groups],
+        "signals": [
+            {"name": sg.name, "address": sg.address, "dir": sg.dir, "pull": sg.pull, "init": sg.init}
+            for sg in table.signals
+        ],
     }
 
 
@@ -372,6 +497,8 @@ def render_all(table: Table) -> dict[str, str]:
     return {
         "relay_table.h": gen_header(table),
         "relay_table.c": gen_source(table),
+        "signal_table.h": gen_signal_header(table),
+        "signal_table.c": gen_signal_source(table),
         "interlock-table.json": json.dumps(gen_interlock_json(table), **json_kw) + "\n",
         "relay-numbers.json": json.dumps(gen_numbers_json(table), **json_kw) + "\n",
         "interlock-groups.md": gen_doc(table),
@@ -397,11 +524,12 @@ def check_all(table: Table, out_dir: Path) -> list[str]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--source", type=Path, default=DEFAULT_SOURCE)
+    parser.add_argument("--signals", type=Path, default=DEFAULT_SIGNALS)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--check", action="store_true", help="только сверить gen/ с источником")
     args = parser.parse_args(argv)
     try:
-        table = load_table(args.source)
+        table = load_all(args.source, args.signals)
     except SourceError as exc:
         print(f"{args.source}: {exc}", file=sys.stderr)
         return 2
@@ -413,7 +541,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"gen/ соответствует {args.source.name} ({table.checksum()})")
         return 0
     write_all(table, args.out)
-    print(f"сгенерировано {len(table.relays)} реле, {len(table.groups)} групп, {table.checksum()}")
+    print(f"сгенерировано {len(table.relays)} реле, {len(table.groups)} групп, "
+          f"{len(table.signals)} сигналов, {table.checksum()}")
     return 0
 
 

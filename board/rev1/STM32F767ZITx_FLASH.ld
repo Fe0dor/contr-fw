@@ -11,7 +11,8 @@ _Min_Stack_Size = 0x1000;
 MEMORY
 {
   RAM   (xrw) : ORIGIN = 0x20000000, LENGTH = 512K
-  FLASH (rx)  : ORIGIN = 0x08000000, LENGTH = 2048K
+  /* двухбанковый режим: образ в одном банке без хвоста 128 КБ под CFG (А10, А11) */
+  FLASH (rx)  : ORIGIN = 0x08000000, LENGTH = 896K
 }
 
 SECTIONS
@@ -21,6 +22,12 @@ SECTIONS
     . = ALIGN(4);
     KEEP(*(.isr_vector))
     . = ALIGN(4);
+  } >FLASH
+
+  /* заголовок образа по фиксированному смещению 0x200 от начала (core/update.h) */
+  .fw_header ORIGIN(FLASH) + 0x200 :
+  {
+    KEEP(*(.fw_header))
   } >FLASH
 
   .text :

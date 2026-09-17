@@ -855,5 +855,280 @@
         "RBtoDUT"
       ]
     }
+  ],
+  "signals": [
+    {
+      "name": "PWRON_A",
+      "address": "PC7",
+      "dir": "out",
+      "pull": "none",
+      "init": 0
+    },
+    {
+      "name": "PWRON_B",
+      "address": "PD15",
+      "dir": "out",
+      "pull": "none",
+      "init": 0
+    },
+    {
+      "name": "PWRON_RSP",
+      "address": "PG15",
+      "dir": "out",
+      "pull": "none",
+      "init": 1
+    },
+    {
+      "name": "CS_PWR",
+      "address": "PE4",
+      "dir": "out",
+      "pull": "none",
+      "init": 1
+    },
+    {
+      "name": "HLG",
+      "address": "PA0",
+      "dir": "out",
+      "pull": "none",
+      "init": 0
+    },
+    {
+      "name": "ResetA0",
+      "address": "PF5",
+      "dir": "out",
+      "pull": "none",
+      "init": 0
+    },
+    {
+      "name": "ResetA1",
+      "address": "PF4",
+      "dir": "out",
+      "pull": "none",
+      "init": 0
+    },
+    {
+      "name": "ResetB0",
+      "address": "PD11",
+      "dir": "out",
+      "pull": "none",
+      "init": 0
+    },
+    {
+      "name": "ResetB1",
+      "address": "PD14",
+      "dir": "out",
+      "pull": "none",
+      "init": 0
+    },
+    {
+      "name": "PWROK1",
+      "address": "PE0",
+      "dir": "in",
+      "pull": "up",
+      "init": null
+    },
+    {
+      "name": "PWROK2",
+      "address": "PF13",
+      "dir": "in",
+      "pull": "up",
+      "init": null
+    },
+    {
+      "name": "PWROK3",
+      "address": "PD13",
+      "dir": "in",
+      "pull": "up",
+      "init": null
+    },
+    {
+      "name": "PWROK4",
+      "address": "PB2",
+      "dir": "in",
+      "pull": "up",
+      "init": null
+    },
+    {
+      "name": "PWROK5",
+      "address": "PE10",
+      "dir": "in",
+      "pull": "up",
+      "init": null
+    },
+    {
+      "name": "RSP_DC_OK",
+      "address": "PG12",
+      "dir": "in",
+      "pull": "none",
+      "init": null
+    },
+    {
+      "name": "RSP_ALARM",
+      "address": "PG10",
+      "dir": "in",
+      "pull": "none",
+      "init": null
+    },
+    {
+      "name": "SR_TEST_IN",
+      "address": "PB7",
+      "dir": "in",
+      "pull": "down",
+      "init": null
+    },
+    {
+      "name": "USER",
+      "address": "PC13",
+      "dir": "in",
+      "pull": "none",
+      "init": null
+    },
+    {
+      "name": "LD1",
+      "address": "PB0",
+      "dir": "out",
+      "pull": "none",
+      "init": 0
+    },
+    {
+      "name": "C1",
+      "address": "PC8",
+      "dir": "dut",
+      "pull": "down",
+      "init": null
+    },
+    {
+      "name": "C2",
+      "address": "PC6",
+      "dir": "dut",
+      "pull": "down",
+      "init": null
+    },
+    {
+      "name": "C3",
+      "address": "PE8",
+      "dir": "dut",
+      "pull": "down",
+      "init": null
+    },
+    {
+      "name": "C4",
+      "address": "PE11",
+      "dir": "dut",
+      "pull": "down",
+      "init": null
+    },
+    {
+      "name": "C5",
+      "address": "PF3",
+      "dir": "dut",
+      "pull": "down",
+      "init": null
+    },
+    {
+      "name": "C6",
+      "address": "PF11",
+      "dir": "dut",
+      "pull": "down",
+      "init": null
+    },
+    {
+      "name": "C7",
+      "address": "PF10",
+      "dir": "dut",
+      "pull": "down",
+      "init": null
+    },
+    {
+      "name": "C8",
+      "address": "PE7",
+      "dir": "dut",
+      "pull": "down",
+      "init": null
+    },
+    {
+      "name": "C9",
+      "address": "PE9",
+      "dir": "dut",
+      "pull": "down",
+      "init": null
+    },
+    {
+      "name": "C10",
+      "address": "PG14",
+      "dir": "dut",
+      "pull": "down",
+      "init": null
+    },
+    {
+      "name": "C11",
+      "address": "PF12",
+      "dir": "dut",
+      "pull": "down",
+      "init": null
+    },
+    {
+      "name": "C12",
+      "address": "PE13",
+      "dir": "dut",
+      "pull": "down",
+      "init": null
+    },
+    {
+      "name": "C13",
+      "address": "PE15",
+      "dir": "dut",
+      "pull": "down",
+      "init": null
+    },
+    {
+      "name": "C14",
+      "address": "PE14",
+      "dir": "dut",
+      "pull": "down",
+      "init": null
+    },
+    {
+      "name": "C15",
+      "address": "PE12",
+      "dir": "dut",
+      "pull": "down",
+      "init": null
+    },
+    {
+      "name": "C16",
+      "address": "PD12",
+      "dir": "dut",
+      "pull": "down",
+      "init": null
+    },
+    {
+      "name": "C17",
+      "address": "PA3",
+      "dir": "dut",
+      "pull": "down",
+      "init": null
+    },
+    {
+      "name": "C18",
+      "address": "PB5",
+      "dir": "dut",
+      "pull": "down",
+      "init": null
+    },
+    {
+      "name": "C19",
+      "address": "PB4",
+      "dir": "dut",
+      "pull": "down",
+      "init": null
+    },
+    {
+      "name": "C20",
+      "address": "PB6",
+      "dir": "dut",
+      "pull": "down",
+      "init": null
+    }
   ]
 }

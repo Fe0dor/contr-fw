@@ -1,13 +1,19 @@
 {
   "version": 6,
-  "cmakeMinimumRequired": {"major": 3, "minor": 25, "patch": 0},
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25,
+    "patch": 0
+  },
   "configurePresets": [
     {
       "name": "host",
       "displayName": "Логика и тесты на хосте",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/host",
-      "cacheVariables": {"CMAKE_BUILD_TYPE": "Debug"}
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
     },
     {
       "name": "target",
@@ -15,18 +21,41 @@
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/target",
       "toolchainFile": "${sourceDir}/cmake/arm-none-eabi.cmake",
-      "cacheVariables": {"CMAKE_BUILD_TYPE": "Debug"}
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "bringup",
+      "displayName": "Плата CONTR, наладочная сборка с DBG:*",
+      "inherits": "target",
+      "binaryDir": "${sourceDir}/build/bringup",
+      "cacheVariables": {
+        "CONTR_BRINGUP": "ON"
+      }
     }
   ],
   "buildPresets": [
-    {"name": "host", "configurePreset": "host"},
-    {"name": "target", "configurePreset": "target"}
+    {
+      "name": "host",
+      "configurePreset": "host"
+    },
+    {
+      "name": "target",
+      "configurePreset": "target"
+    },
+    {
+      "name": "bringup",
+      "configurePreset": "bringup"
+    }
   ],
   "testPresets": [
     {
       "name": "host",
       "configurePreset": "host",
-      "output": {"outputOnFailure": true}
+      "output": {
+        "outputOnFailure": true
+      }
     }
   ],
   "workflowPresets": [
@@ -34,17 +63,46 @@
       "name": "host",
       "displayName": "Сконфигурировать, собрать и прогнать тесты на хосте",
       "steps": [
-        {"type": "configure", "name": "host"},
-        {"type": "build", "name": "host"},
-        {"type": "test", "name": "host"}
+        {
+          "type": "configure",
+          "name": "host"
+        },
+        {
+          "type": "build",
+          "name": "host"
+        },
+        {
+          "type": "test",
+          "name": "host"
+        }
       ]
     },
     {
       "name": "target",
       "displayName": "Сконфигурировать и собрать образ для платы",
       "steps": [
-        {"type": "configure", "name": "target"},
-        {"type": "build", "name": "target"}
+        {
+          "type": "configure",
+          "name": "target"
+        },
+        {
+          "type": "build",
+          "name": "target"
+        }
+      ]
+    },
+    {
+      "name": "bringup",
+      "displayName": "Собрать наладочный образ",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "bringup"
+        },
+        {
+          "type": "build",
+          "name": "bringup"
+        }
       ]
     }
   ]
