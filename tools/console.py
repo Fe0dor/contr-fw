@@ -22,6 +22,17 @@ from datetime import datetime
 import serial
 from serial.tools import list_ports
 
+def _utf8_console() -> None:
+    """Терминал Windows по умолчанию в cp1251/cp866: русские сообщения не должны ронять скрипт."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
+
+
+_utf8_console()
+
 BAUD = 115200
 KNOWN_VIDS = {0x1366: "SEGGER J-Link", 0x0483: "ST-LINK"}
 

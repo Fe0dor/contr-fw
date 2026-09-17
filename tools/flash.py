@@ -21,6 +21,17 @@ import sys
 import tempfile
 from pathlib import Path
 
+def _utf8_console() -> None:
+    """Терминал Windows по умолчанию в cp1251/cp866: русские сообщения не должны ронять скрипт."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
+
+
+_utf8_console()
+
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_IMAGE = ROOT / "build" / "target" / "contr-fw.hex"
 DEVICE = "STM32F767ZI"

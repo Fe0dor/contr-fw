@@ -30,6 +30,17 @@ from pathlib import Path
 
 import yaml
 
+def _utf8_console() -> None:
+    """Терминал Windows по умолчанию в cp1251/cp866: русские сообщения не должны ронять скрипт."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
+
+
+_utf8_console()
+
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_SOURCE = ROOT / "board" / "rev1" / "relays.yaml"
 DEFAULT_OUT = ROOT / "gen"
