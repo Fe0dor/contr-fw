@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "contr-ui"
+version = "0.0.1"
+description = "Ручной интерфейс управления стендом CONTR (документ 21): терминал, журнал, панели"
+requires-python = ">=3.12"
+dependencies = ["pyserial>=3.5"]
+
+[project.scripts]
+contr-ui = "contr_ui.app:main"
+
+[tool.setuptools.packages.find]
+include = ["contr_ui*"]

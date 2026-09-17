@@ -1,0 +1,51 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {"major": 3, "minor": 25, "patch": 0},
+  "configurePresets": [
+    {
+      "name": "host",
+      "displayName": "Логика и тесты на хосте",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/host",
+      "cacheVariables": {"CMAKE_BUILD_TYPE": "Debug"}
+    },
+    {
+      "name": "target",
+      "displayName": "Плата CONTR, STM32F767ZI",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/target",
+      "toolchainFile": "${sourceDir}/cmake/arm-none-eabi.cmake",
+      "cacheVariables": {"CMAKE_BUILD_TYPE": "Debug"}
+    }
+  ],
+  "buildPresets": [
+    {"name": "host", "configurePreset": "host"},
+    {"name": "target", "configurePreset": "target"}
+  ],
+  "testPresets": [
+    {
+      "name": "host",
+      "configurePreset": "host",
+      "output": {"outputOnFailure": true}
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "host",
+      "displayName": "Сконфигурировать, собрать и прогнать тесты на хосте",
+      "steps": [
+        {"type": "configure", "name": "host"},
+        {"type": "build", "name": "host"},
+        {"type": "test", "name": "host"}
+      ]
+    },
+    {
+      "name": "target",
+      "displayName": "Сконфигурировать и собрать образ для платы",
+      "steps": [
+        {"type": "configure", "name": "target"},
+        {"type": "build", "name": "target"}
+      ]
+    }
+  ]
+}

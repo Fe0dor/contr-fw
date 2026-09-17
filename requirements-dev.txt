@@ -1,0 +1,4 @@
+pyyaml>=6
+jsonschema>=4.20
+pyserial>=3.5
+pytest>=8

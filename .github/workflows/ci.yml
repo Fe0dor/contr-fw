@@ -1,0 +1,65 @@
+name: CI
+
+# План 22, шаг 0: сборка target, сборка и ctest host на macOS и Windows;
+# генератор единого источника сверяется с закоммиченным gen/ (FW-240).
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: "build (${{ matrix.os }})"
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    env:
+      # хост-компилятор: Clang на Mac, MinGW-w64 GCC на Windows (раздел 0 плана 22)
+      CC: ${{ matrix.os == 'windows-latest' && 'gcc' || 'clang' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Зависимости Python
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Генератор — gen/ соответствует relays.yaml (FW-240)
+        run: python tools/gen_board.py --check
+
+      - name: Тесты Python (генератор, интерфейс)
+        run: python -m pytest
+
+      - uses: lukka/get-cmake@latest
+
+      - uses: carlosperate/arm-none-eabi-gcc-action@v1
+        with:
+          release: "14.2.Rel1"
+
+      - name: Хост — сборка и ctest
+        run: cmake --workflow --preset host
+
+      - name: Плата — сборка образа
+        run: cmake --workflow --preset target
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: contr-fw-${{ matrix.os }}
+          path: |
+            build/target/contr-fw.hex
+            build/target/contr-fw.bin
+            build/target/contr-fw.elf
+            build/target/contr-fw.map

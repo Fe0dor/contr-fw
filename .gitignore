@@ -1,0 +1,9 @@
+build/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+.venv/
+*.jlink
+JLink.log
+.DS_Store

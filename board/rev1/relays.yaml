@@ -1,0 +1,147 @@
+# Единый источник таблицы реле платы CONTR ревизии 1 (ТЗ 19, раздел 3.12, FW-239…FW-244).
+#
+# Из этого файла tools/gen_board.py порождает gen/relay_table.{h,c} (прошивка),
+# gen/interlock-table.json (файл данных плагина по схеме SDK), gen/relay-numbers.json
+# (эмулятор и интерфейс) и gen/interlock-groups.md (таблица документации).
+# Ручная правка сгенерированных файлов запрещена; CI сверяет их с этим файлом (FW-240).
+#
+# Источник адресов и блоков — описание платы checker/docs/hardware/contr.md
+# (таблица сигналов и раздел «Уточнения»). Порядок реле в этом файле — канонический
+# порядок протокола (FW-120): V*, M*, A*, CH*, D*, PM*, RAtoDUT, RBtoDUT, L*.
+#
+# Номера реле (FW-244): назначаются один раз и не переиспользуются. Новое реле получает
+# номер next_number, после чего next_number увеличивается. Удалённое реле переносит свой
+# номер в retired; генератор отвергает повтор номера, номер из retired и номер >= next_number.
+#
+# Адрес: вывод STM32 (`PG8`) или выход сдвигового регистра `SRg.r.o` — цепочка g,
+# регистр r от нуля (регистр 0 ближайший к MCU), выход o = A…H.
+#
+# Блоки — разделы таблицы сигналов описания платы:
+#   ext  — реле для переключения внешних сигналов на измерительные приборы
+#   test — испытание (второе изделие стенда)
+#   int  — реле для переключения внутренних сигналов на измерительные приборы
+#   mux  — сигналы на силовик (плата MUX)
+#   load — сигналы на блок нагрузок
+
+table_version: "rev1.1"
+next_number: 82
+retired: []
+
+# Шинные группы блокировок (раздел 3.3 ТЗ): в группе одновременно включено не более
+# одного реле. Порядок групп здесь — порядок в файле данных плагина и в relay_table.
+groups:
+  - name: V
+    reason: одна шина вольтметра
+  - name: M
+    reason: одна шина мультиметра
+  - name: A
+    reason: одна шина амперметра
+  - name: CH1
+    reason: первый канал осциллографа
+  - name: D1
+    reason: точка изделия не подключается на обе шины измерителя изоляции сразу
+  - name: D2
+    reason: то же
+  - name: D3
+    reason: то же
+  - name: D4
+    reason: то же
+  - name: D5
+    reason: то же
+  - name: D6
+    reason: то же
+  - name: RA
+    reason: секция A не подключается одновременно к изделию и к мультиметру
+  - name: RB
+    reason: то же для секции B
+
+relays:
+  # --- V: вольтметр ---
+  - {name: V1.1,  number: 1,  block: ext,  address: SR1.2.A, groups: [V]}
+  - {name: V1.2,  number: 2,  block: ext,  address: SR1.2.B, groups: [V]}
+  - {name: V1.3,  number: 3,  block: ext,  address: SR1.2.C, groups: [V]}
+  - {name: V1.4,  number: 4,  block: ext,  address: SR1.2.D, groups: [V]}
+  - {name: V1.5,  number: 5,  block: ext,  address: SR1.2.E, groups: [V]}
+  - {name: V1.6,  number: 6,  block: ext,  address: SR1.2.F, groups: [V]}
+  - {name: V1.7,  number: 7,  block: ext,  address: SR1.2.G, groups: [V]}
+  - {name: V1.8,  number: 8,  block: ext,  address: SR1.2.H, groups: [V]}
+  - {name: V2.1,  number: 9,  block: ext,  address: SR1.3.A, groups: [V]}
+  - {name: V2.2,  number: 10, block: ext,  address: SR1.3.B, groups: [V]}
+  - {name: V2.3,  number: 11, block: ext,  address: SR1.3.C, groups: [V]}
+  - {name: V2.4,  number: 12, block: ext,  address: SR1.3.D, groups: [V]}
+  - {name: V2.5,  number: 13, block: ext,  address: SR1.3.E, groups: [V]}
+  - {name: V2.6,  number: 14, block: ext,  address: SR1.3.F, groups: [V]}
+  - {name: V2.7,  number: 15, block: ext,  address: SR1.3.G, groups: [V]}
+  - {name: V3.1,  number: 16, block: mux,  address: PC0,     groups: [V]}
+  - {name: V3.2,  number: 17, block: mux,  address: PC3,     groups: [V]}
+  - {name: V3.3,  number: 18, block: mux,  address: PD3,     groups: [V]}
+  - {name: V3.4,  number: 19, block: mux,  address: PG3,     groups: [V]}
+  - {name: V3.5,  number: 20, block: mux,  address: PD7,     groups: [V]}
+  - {name: V3.6,  number: 21, block: mux,  address: SR0.2.A, groups: [V], note: контрольная точка TP33}
+  - {name: V3.7,  number: 22, block: mux,  address: PF2,     groups: [V]}
+  - {name: V3.8,  number: 23, block: mux,  address: PF8,     groups: [V]}
+  - {name: V3.9,  number: 24, block: mux,  address: PD1,     groups: [V]}
+  - {name: V3.10, number: 25, block: mux,  address: PG1,     groups: [V]}
+  - {name: V4.1,  number: 26, block: test, address: SR1.0.H, groups: [V]}
+  - {name: V4.2,  number: 27, block: test, address: SR1.1.B, groups: [V]}
+  - {name: V4.3,  number: 28, block: test, address: SR1.1.E, groups: [V]}
+  - {name: V4.4,  number: 29, block: test, address: SR1.1.H, groups: [V]}
+  # --- M: мультиметр ---
+  - {name: M1,    number: 30, block: ext,  address: PA6,     groups: [M]}
+  - {name: M2,    number: 31, block: ext,  address: PA5,     groups: [M]}
+  - {name: M3,    number: 32, block: ext,  address: PC9,     groups: [M]}
+  - {name: M4,    number: 33, block: int,  address: PG8,     groups: [M, RA], note: R1 на мультиметр}
+  - {name: M5,    number: 34, block: int,  address: PG5,     groups: [M, RA], note: R2 на мультиметр}
+  - {name: M6,    number: 35, block: int,  address: PD10,    groups: [M, RB], note: R3 на мультиметр}
+  - {name: M7,    number: 36, block: int,  address: SR0.2.D, groups: [M, RB], note: R4 на мультиметр, перенесено с PG7}
+  - {name: M8,    number: 37, block: int,  address: PA4,     groups: [M]}
+  - {name: M9,    number: 38, block: mux,  address: PG0,     groups: [M]}
+  - {name: M10,   number: 39, block: mux,  address: PF0,     groups: [M]}
+  - {name: M11,   number: 40, block: test, address: SR1.0.A, groups: [M]}
+  - {name: M12,   number: 41, block: test, address: SR1.0.B, groups: [M]}
+  - {name: M13,   number: 42, block: test, address: SR1.0.C, groups: [M]}
+  - {name: M14,   number: 43, block: test, address: SR1.0.D, groups: [M]}
+  - {name: M15,   number: 44, block: test, address: SR1.0.E, groups: [M]}
+  - {name: M16,   number: 45, block: test, address: SR1.0.F, groups: [M]}
+  - {name: M17,   number: 46, block: test, address: SR1.0.G, groups: [M]}
+  - {name: M18,   number: 47, block: test, address: SR1.1.C, groups: [M]}
+  - {name: M19,   number: 48, block: test, address: SR1.1.F, groups: [M]}
+  # --- A: амперметр, силовые реле в цепи 48 В ---
+  - {name: A1,    number: 49, block: mux,  address: PC2,     groups: [A]}
+  - {name: A2,    number: 50, block: mux,  address: PD6,     groups: [A]}
+  - {name: A3,    number: 51, block: mux,  address: PE3,     groups: [A]}
+  - {name: A4,    number: 52, block: mux,  address: PF1,     groups: [A]}
+  - {name: A5,    number: 53, block: mux,  address: PD0,     groups: [A]}
+  # --- CH: осциллограф ---
+  - {name: CH1.1, number: 54, block: mux,  address: PD4,     groups: [CH1]}
+  - {name: CH1.2, number: 55, block: mux,  address: PG2,     groups: [CH1]}
+  - {name: CH1.3, number: 56, block: mux,  address: PD5,     groups: [CH1]}
+  - {name: CH1.4, number: 57, block: mux,  address: PF9,     groups: [CH1]}
+  - {name: CH1.5, number: 58, block: mux,  address: SR0.2.C, groups: [CH1]}
+  - {name: CH2.1, number: 59, block: int,  address: SR1.3.H, groups: []}
+  # --- D: измеритель изоляции, G1 — плюс, G2 — минус прибора ---
+  - {name: D1_G1, number: 60, block: mux,  address: SR0.1.A, groups: [D1]}
+  - {name: D1_G2, number: 61, block: mux,  address: SR0.1.B, groups: [D1]}
+  - {name: D2_G1, number: 62, block: mux,  address: SR0.0.G, groups: [D2]}
+  - {name: D2_G2, number: 63, block: mux,  address: SR0.0.H, groups: [D2]}
+  - {name: D3_G1, number: 64, block: mux,  address: SR0.0.E, groups: [D3]}
+  - {name: D3_G2, number: 65, block: mux,  address: SR0.0.F, groups: [D3]}
+  - {name: D4_G1, number: 66, block: mux,  address: SR0.0.C, groups: [D4]}
+  - {name: D4_G2, number: 67, block: mux,  address: SR0.0.D, groups: [D4]}
+  - {name: D5_G1, number: 68, block: mux,  address: SR0.0.A, groups: [D5]}
+  - {name: D5_G2, number: 69, block: mux,  address: SR0.0.B, groups: [D5]}
+  - {name: D6_G1, number: 70, block: mux,  address: SR0.1.F, groups: [D6]}
+  - {name: D6_G2, number: 71, block: mux,  address: SR0.1.D, groups: [D6]}
+  # --- PM: выбор режима второго изделия, не взаимоисключающие ---
+  - {name: PM1,   number: 72, block: test, address: SR1.1.A, groups: []}
+  - {name: PM2,   number: 73, block: test, address: SR1.1.D, groups: []}
+  - {name: PM3,   number: 74, block: test, address: SR1.1.G, groups: []}
+  # --- секции настройки на изделие ---
+  - {name: RAtoDUT, number: 75, block: int, address: PG9,   groups: [RA], note: в нетлисте RMtoDUT}
+  - {name: RBtoDUT, number: 76, block: int, address: PG4,   groups: [RB], note: в нетлисте RNtoDUT}
+  # --- L: внешняя нагрузка; в файл данных плагина не входят (FW-242) ---
+  - {name: L1,    number: 77, block: load, address: PD2,     groups: [], note: в нетлисте ON_LOAD_MODE}
+  - {name: L2,    number: 78, block: load, address: SR0.1.H, groups: []}
+  - {name: L3,    number: 79, block: load, address: SR0.1.G, groups: []}
+  - {name: L4,    number: 80, block: load, address: SR0.1.E, groups: []}
+  - {name: L5,    number: 81, block: load, address: SR0.1.C, groups: []}

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://testdut.example/schemas/interlock-table.schema.json",
+  "title": "Файл данных таблицы блокировок плагина (PLG-024, DEV-060 п. 1, FW-239)",
+  "description": "Генерируется из единого источника репозитория прошивки; версия и контрольная сумма сверяются с активной таблицей прошивки в preflight (DEV-064, INTERLOCK:LIST?).",
+  "type": "object",
+  "properties": {
+    "table_version": {"type": "string", "minLength": 1},
+    "checksum": {
+      "type": "string",
+      "pattern": "^(sha256:[0-9a-f]{64}|crc32:[0-9a-f]{8})$",
+      "description": "Контрольная сумма таблицы из сборки прошивки (FW-239): sha256 — ровно 64 hex-символа, crc32 — ровно 8"
+    },
+    "relays": {
+      "type": "array",
+      "items": {"type": "integer", "minimum": 1},
+      "uniqueItems": true,
+      "description": "Полный список реле устройства (опционально, для диагностики)"
+    },
+    "power_relays": {
+      "type": "array",
+      "items": {"type": "integer", "minimum": 1},
+      "uniqueItems": true,
+      "description": "Силовые реле: запрещено переключать под напряжением; объявляет устройство, у которого такой запрет есть"
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+            "description": "Имя группы — как в ответе ERR:INTERLOCK,<имя> (FW-125)"
+          },
+          "relays": {
+            "type": "array",
+            "minItems": 2,
+            "uniqueItems": true,
+            "items": {"type": "integer", "minimum": 1}
+          }
+        },
+        "required": ["name", "relays"],
+        "additionalProperties": false
+      },
+      "description": "Взаимоисключающие группы реле (FW-125). Имена групп уникальны, а реле групп и power_relays входят в relays: схемой это не выражается (uniqueItems сравнивает объекты целиком) — сверяет валидатор пакета (PLG-026)"
+    }
+  },
+  "required": ["table_version", "checksum", "groups"],
+  "additionalProperties": false
+}

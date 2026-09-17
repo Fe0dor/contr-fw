@@ -1,0 +1,6 @@
+# Конфигурация тестов Python репозитория (генератор, инструменты, интерфейс).
+# Прошивка собирается CMake; здесь только pytest.
+[tool.pytest.ini_options]
+testpaths = ["tests/py"]
+pythonpath = ["tools", "ui"]
+addopts = "-q"

@@ -1,0 +1,859 @@
+{
+  "table_version": "rev1.1",
+  "checksum": "sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70",
+  "relays": [
+    {
+      "name": "V1.1",
+      "number": 1,
+      "block": "ext",
+      "address": "SR1.2.A",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V1.2",
+      "number": 2,
+      "block": "ext",
+      "address": "SR1.2.B",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V1.3",
+      "number": 3,
+      "block": "ext",
+      "address": "SR1.2.C",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V1.4",
+      "number": 4,
+      "block": "ext",
+      "address": "SR1.2.D",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V1.5",
+      "number": 5,
+      "block": "ext",
+      "address": "SR1.2.E",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V1.6",
+      "number": 6,
+      "block": "ext",
+      "address": "SR1.2.F",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V1.7",
+      "number": 7,
+      "block": "ext",
+      "address": "SR1.2.G",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V1.8",
+      "number": 8,
+      "block": "ext",
+      "address": "SR1.2.H",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V2.1",
+      "number": 9,
+      "block": "ext",
+      "address": "SR1.3.A",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V2.2",
+      "number": 10,
+      "block": "ext",
+      "address": "SR1.3.B",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V2.3",
+      "number": 11,
+      "block": "ext",
+      "address": "SR1.3.C",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V2.4",
+      "number": 12,
+      "block": "ext",
+      "address": "SR1.3.D",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V2.5",
+      "number": 13,
+      "block": "ext",
+      "address": "SR1.3.E",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V2.6",
+      "number": 14,
+      "block": "ext",
+      "address": "SR1.3.F",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V2.7",
+      "number": 15,
+      "block": "ext",
+      "address": "SR1.3.G",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V3.1",
+      "number": 16,
+      "block": "mux",
+      "address": "PC0",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V3.2",
+      "number": 17,
+      "block": "mux",
+      "address": "PC3",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V3.3",
+      "number": 18,
+      "block": "mux",
+      "address": "PD3",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V3.4",
+      "number": 19,
+      "block": "mux",
+      "address": "PG3",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V3.5",
+      "number": 20,
+      "block": "mux",
+      "address": "PD7",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V3.6",
+      "number": 21,
+      "block": "mux",
+      "address": "SR0.2.A",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V3.7",
+      "number": 22,
+      "block": "mux",
+      "address": "PF2",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V3.8",
+      "number": 23,
+      "block": "mux",
+      "address": "PF8",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V3.9",
+      "number": 24,
+      "block": "mux",
+      "address": "PD1",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V3.10",
+      "number": 25,
+      "block": "mux",
+      "address": "PG1",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V4.1",
+      "number": 26,
+      "block": "test",
+      "address": "SR1.0.H",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V4.2",
+      "number": 27,
+      "block": "test",
+      "address": "SR1.1.B",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V4.3",
+      "number": 28,
+      "block": "test",
+      "address": "SR1.1.E",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "V4.4",
+      "number": 29,
+      "block": "test",
+      "address": "SR1.1.H",
+      "groups": [
+        "V"
+      ]
+    },
+    {
+      "name": "M1",
+      "number": 30,
+      "block": "ext",
+      "address": "PA6",
+      "groups": [
+        "M"
+      ]
+    },
+    {
+      "name": "M2",
+      "number": 31,
+      "block": "ext",
+      "address": "PA5",
+      "groups": [
+        "M"
+      ]
+    },
+    {
+      "name": "M3",
+      "number": 32,
+      "block": "ext",
+      "address": "PC9",
+      "groups": [
+        "M"
+      ]
+    },
+    {
+      "name": "M4",
+      "number": 33,
+      "block": "int",
+      "address": "PG8",
+      "groups": [
+        "M",
+        "RA"
+      ]
+    },
+    {
+      "name": "M5",
+      "number": 34,
+      "block": "int",
+      "address": "PG5",
+      "groups": [
+        "M",
+        "RA"
+      ]
+    },
+    {
+      "name": "M6",
+      "number": 35,
+      "block": "int",
+      "address": "PD10",
+      "groups": [
+        "M",
+        "RB"
+      ]
+    },
+    {
+      "name": "M7",
+      "number": 36,
+      "block": "int",
+      "address": "SR0.2.D",
+      "groups": [
+        "M",
+        "RB"
+      ]
+    },
+    {
+      "name": "M8",
+      "number": 37,
+      "block": "int",
+      "address": "PA4",
+      "groups": [
+        "M"
+      ]
+    },
+    {
+      "name": "M9",
+      "number": 38,
+      "block": "mux",
+      "address": "PG0",
+      "groups": [
+        "M"
+      ]
+    },
+    {
+      "name": "M10",
+      "number": 39,
+      "block": "mux",
+      "address": "PF0",
+      "groups": [
+        "M"
+      ]
+    },
+    {
+      "name": "M11",
+      "number": 40,
+      "block": "test",
+      "address": "SR1.0.A",
+      "groups": [
+        "M"
+      ]
+    },
+    {
+      "name": "M12",
+      "number": 41,
+      "block": "test",
+      "address": "SR1.0.B",
+      "groups": [
+        "M"
+      ]
+    },
+    {
+      "name": "M13",
+      "number": 42,
+      "block": "test",
+      "address": "SR1.0.C",
+      "groups": [
+        "M"
+      ]
+    },
+    {
+      "name": "M14",
+      "number": 43,
+      "block": "test",
+      "address": "SR1.0.D",
+      "groups": [
+        "M"
+      ]
+    },
+    {
+      "name": "M15",
+      "number": 44,
+      "block": "test",
+      "address": "SR1.0.E",
+      "groups": [
+        "M"
+      ]
+    },
+    {
+      "name": "M16",
+      "number": 45,
+      "block": "test",
+      "address": "SR1.0.F",
+      "groups": [
+        "M"
+      ]
+    },
+    {
+      "name": "M17",
+      "number": 46,
+      "block": "test",
+      "address": "SR1.0.G",
+      "groups": [
+        "M"
+      ]
+    },
+    {
+      "name": "M18",
+      "number": 47,
+      "block": "test",
+      "address": "SR1.1.C",
+      "groups": [
+        "M"
+      ]
+    },
+    {
+      "name": "M19",
+      "number": 48,
+      "block": "test",
+      "address": "SR1.1.F",
+      "groups": [
+        "M"
+      ]
+    },
+    {
+      "name": "A1",
+      "number": 49,
+      "block": "mux",
+      "address": "PC2",
+      "groups": [
+        "A"
+      ]
+    },
+    {
+      "name": "A2",
+      "number": 50,
+      "block": "mux",
+      "address": "PD6",
+      "groups": [
+        "A"
+      ]
+    },
+    {
+      "name": "A3",
+      "number": 51,
+      "block": "mux",
+      "address": "PE3",
+      "groups": [
+        "A"
+      ]
+    },
+    {
+      "name": "A4",
+      "number": 52,
+      "block": "mux",
+      "address": "PF1",
+      "groups": [
+        "A"
+      ]
+    },
+    {
+      "name": "A5",
+      "number": 53,
+      "block": "mux",
+      "address": "PD0",
+      "groups": [
+        "A"
+      ]
+    },
+    {
+      "name": "CH1.1",
+      "number": 54,
+      "block": "mux",
+      "address": "PD4",
+      "groups": [
+        "CH1"
+      ]
+    },
+    {
+      "name": "CH1.2",
+      "number": 55,
+      "block": "mux",
+      "address": "PG2",
+      "groups": [
+        "CH1"
+      ]
+    },
+    {
+      "name": "CH1.3",
+      "number": 56,
+      "block": "mux",
+      "address": "PD5",
+      "groups": [
+        "CH1"
+      ]
+    },
+    {
+      "name": "CH1.4",
+      "number": 57,
+      "block": "mux",
+      "address": "PF9",
+      "groups": [
+        "CH1"
+      ]
+    },
+    {
+      "name": "CH1.5",
+      "number": 58,
+      "block": "mux",
+      "address": "SR0.2.C",
+      "groups": [
+        "CH1"
+      ]
+    },
+    {
+      "name": "CH2.1",
+      "number": 59,
+      "block": "int",
+      "address": "SR1.3.H",
+      "groups": []
+    },
+    {
+      "name": "D1_G1",
+      "number": 60,
+      "block": "mux",
+      "address": "SR0.1.A",
+      "groups": [
+        "D1"
+      ]
+    },
+    {
+      "name": "D1_G2",
+      "number": 61,
+      "block": "mux",
+      "address": "SR0.1.B",
+      "groups": [
+        "D1"
+      ]
+    },
+    {
+      "name": "D2_G1",
+      "number": 62,
+      "block": "mux",
+      "address": "SR0.0.G",
+      "groups": [
+        "D2"
+      ]
+    },
+    {
+      "name": "D2_G2",
+      "number": 63,
+      "block": "mux",
+      "address": "SR0.0.H",
+      "groups": [
+        "D2"
+      ]
+    },
+    {
+      "name": "D3_G1",
+      "number": 64,
+      "block": "mux",
+      "address": "SR0.0.E",
+      "groups": [
+        "D3"
+      ]
+    },
+    {
+      "name": "D3_G2",
+      "number": 65,
+      "block": "mux",
+      "address": "SR0.0.F",
+      "groups": [
+        "D3"
+      ]
+    },
+    {
+      "name": "D4_G1",
+      "number": 66,
+      "block": "mux",
+      "address": "SR0.0.C",
+      "groups": [
+        "D4"
+      ]
+    },
+    {
+      "name": "D4_G2",
+      "number": 67,
+      "block": "mux",
+      "address": "SR0.0.D",
+      "groups": [
+        "D4"
+      ]
+    },
+    {
+      "name": "D5_G1",
+      "number": 68,
+      "block": "mux",
+      "address": "SR0.0.A",
+      "groups": [
+        "D5"
+      ]
+    },
+    {
+      "name": "D5_G2",
+      "number": 69,
+      "block": "mux",
+      "address": "SR0.0.B",
+      "groups": [
+        "D5"
+      ]
+    },
+    {
+      "name": "D6_G1",
+      "number": 70,
+      "block": "mux",
+      "address": "SR0.1.F",
+      "groups": [
+        "D6"
+      ]
+    },
+    {
+      "name": "D6_G2",
+      "number": 71,
+      "block": "mux",
+      "address": "SR0.1.D",
+      "groups": [
+        "D6"
+      ]
+    },
+    {
+      "name": "PM1",
+      "number": 72,
+      "block": "test",
+      "address": "SR1.1.A",
+      "groups": []
+    },
+    {
+      "name": "PM2",
+      "number": 73,
+      "block": "test",
+      "address": "SR1.1.D",
+      "groups": []
+    },
+    {
+      "name": "PM3",
+      "number": 74,
+      "block": "test",
+      "address": "SR1.1.G",
+      "groups": []
+    },
+    {
+      "name": "RAtoDUT",
+      "number": 75,
+      "block": "int",
+      "address": "PG9",
+      "groups": [
+        "RA"
+      ]
+    },
+    {
+      "name": "RBtoDUT",
+      "number": 76,
+      "block": "int",
+      "address": "PG4",
+      "groups": [
+        "RB"
+      ]
+    },
+    {
+      "name": "L1",
+      "number": 77,
+      "block": "load",
+      "address": "PD2",
+      "groups": []
+    },
+    {
+      "name": "L2",
+      "number": 78,
+      "block": "load",
+      "address": "SR0.1.H",
+      "groups": []
+    },
+    {
+      "name": "L3",
+      "number": 79,
+      "block": "load",
+      "address": "SR0.1.G",
+      "groups": []
+    },
+    {
+      "name": "L4",
+      "number": 80,
+      "block": "load",
+      "address": "SR0.1.E",
+      "groups": []
+    },
+    {
+      "name": "L5",
+      "number": 81,
+      "block": "load",
+      "address": "SR0.1.C",
+      "groups": []
+    }
+  ],
+  "groups": [
+    {
+      "name": "V",
+      "relays": [
+        "V1.1",
+        "V1.2",
+        "V1.3",
+        "V1.4",
+        "V1.5",
+        "V1.6",
+        "V1.7",
+        "V1.8",
+        "V2.1",
+        "V2.2",
+        "V2.3",
+        "V2.4",
+        "V2.5",
+        "V2.6",
+        "V2.7",
+        "V3.1",
+        "V3.2",
+        "V3.3",
+        "V3.4",
+        "V3.5",
+        "V3.6",
+        "V3.7",
+        "V3.8",
+        "V3.9",
+        "V3.10",
+        "V4.1",
+        "V4.2",
+        "V4.3",
+        "V4.4"
+      ]
+    },
+    {
+      "name": "M",
+      "relays": [
+        "M1",
+        "M2",
+        "M3",
+        "M4",
+        "M5",
+        "M6",
+        "M7",
+        "M8",
+        "M9",
+        "M10",
+        "M11",
+        "M12",
+        "M13",
+        "M14",
+        "M15",
+        "M16",
+        "M17",
+        "M18",
+        "M19"
+      ]
+    },
+    {
+      "name": "A",
+      "relays": [
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "A5"
+      ]
+    },
+    {
+      "name": "CH1",
+      "relays": [
+        "CH1.1",
+        "CH1.2",
+        "CH1.3",
+        "CH1.4",
+        "CH1.5"
+      ]
+    },
+    {
+      "name": "D1",
+      "relays": [
+        "D1_G1",
+        "D1_G2"
+      ]
+    },
+    {
+      "name": "D2",
+      "relays": [
+        "D2_G1",
+        "D2_G2"
+      ]
+    },
+    {
+      "name": "D3",
+      "relays": [
+        "D3_G1",
+        "D3_G2"
+      ]
+    },
+    {
+      "name": "D4",
+      "relays": [
+        "D4_G1",
+        "D4_G2"
+      ]
+    },
+    {
+      "name": "D5",
+      "relays": [
+        "D5_G1",
+        "D5_G2"
+      ]
+    },
+    {
+      "name": "D6",
+      "relays": [
+        "D6_G1",
+        "D6_G2"
+      ]
+    },
+    {
+      "name": "RA",
+      "relays": [
+        "M4",
+        "M5",
+        "RAtoDUT"
+      ]
+    },
+    {
+      "name": "RB",
+      "relays": [
+        "M6",
+        "M7",
+        "RBtoDUT"
+      ]
+    }
+  ]
+}
