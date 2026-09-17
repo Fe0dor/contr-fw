@@ -85,8 +85,13 @@ int hal_i2c_write(uint8_t bus, uint8_t addr7, const uint8_t *data, size_t len);
 int hal_i2c_read(uint8_t bus, uint8_t addr7, uint8_t *data, size_t len);
 int hal_i2c_write_read(uint8_t bus, uint8_t addr7, const uint8_t *w, size_t wlen, uint8_t *r, size_t rlen);
 
-/* Переинициализация контроллера шины: ступень лестницы восстановления (FW-158). */
+/* Переинициализация контроллера шины: ступень лестницы восстановления (FW-158).
+ * Если SDA удерживается низким, шина освобождается девятью тактами SCL. */
 void hal_i2c_reset(uint8_t bus);
+
+/* Наладка: флаги состояния контроллера (ISR) и уровни SCL/SDA; смена TIMINGR. */
+uint32_t hal_i2c_status(uint8_t bus, bool *scl, bool *sda);
+void hal_i2c_set_timing(uint8_t bus, uint32_t timingr);
 
 /* ---------------------------------------------------------------- watchdog */
 

@@ -220,6 +220,8 @@ int hal_i2c_read(uint8_t bus, uint8_t addr7, uint8_t *data, size_t len)
 }
 
 void hal_i2c_reset(uint8_t bus) { journal("i2c_reset %u", bus); }
+uint32_t hal_i2c_status(uint8_t bus, bool *scl, bool *sda) { (void)bus; *scl = *sda = true; return 0; }
+void hal_i2c_set_timing(uint8_t bus, uint32_t timingr) { journal("i2c_timing %u %08lx", bus, (unsigned long)timingr); }
 
 /* ---- watchdog ---- */
 

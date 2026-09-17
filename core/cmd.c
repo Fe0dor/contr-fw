@@ -345,6 +345,10 @@ void dbg_pin_q(struct cmdctx *c);
 void dbg_sr(struct cmdctx *c);
 void dbg_sr_q(struct cmdctx *c);
 void dbg_i2c_scan(struct cmdctx *c);
+void dbg_i2c(struct cmdctx *c);
+void dbg_i2c_stat(struct cmdctx *c);
+void dbg_i2c_timing(struct cmdctx *c);
+void dbg_i2c_reset(struct cmdctx *c);
 void dbg_spi(struct cmdctx *c);
 #endif
 
@@ -372,6 +376,10 @@ static const struct cmd_desc table[] = {
     {"DBG:SR", 2, 2, CMDF_SET | CMDF_BRINGUP, dbg_sr},
     {"DBG:SR?", 1, 1, CMDF_QUERY | CMDF_BRINGUP, dbg_sr_q},
     {"DBG:I2C:SCAN", 1, 1, CMDF_QUERY | CMDF_BRINGUP, dbg_i2c_scan},
+    {"DBG:I2C", 4, 4, CMDF_SET | CMDF_BRINGUP, dbg_i2c},
+    {"DBG:I2C:STAT?", 1, 1, CMDF_QUERY | CMDF_BRINGUP, dbg_i2c_stat},
+    {"DBG:I2C:TIMING", 2, 2, CMDF_SET | CMDF_BRINGUP, dbg_i2c_timing},
+    {"DBG:I2C:RESET", 1, 1, CMDF_SET | CMDF_BRINGUP, dbg_i2c_reset},
     {"DBG:SPI", 1, 1, CMDF_SET | CMDF_BRINGUP, dbg_spi},
 #endif
 };
