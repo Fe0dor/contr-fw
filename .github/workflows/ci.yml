@@ -55,6 +55,15 @@ jobs:
       - name: Плата — сборка образа
         run: cmake --workflow --preset target
 
+      - name: Наладочная сборка
+        run: cmake --workflow --preset bringup
+
+      - name: Диалоги — эмулятор
+        run: python tools/run_dialogs.py --emu
+
+      - name: Диалоги — C-ядро
+        run: python tools/run_dialogs.py --host build/host/contr-host${{ matrix.os == 'windows-latest' && '.exe' || '' }}
+
       - uses: actions/upload-artifact@v4
         with:
           name: contr-fw-${{ matrix.os }}
@@ -63,3 +72,4 @@ jobs:
             build/target/contr-fw.bin
             build/target/contr-fw.elf
             build/target/contr-fw.map
+            build/target/contr-fw.upd

@@ -187,6 +187,10 @@ static void test_utils(void)
     uint8_t out[8];
     CHECK(base64_decode("aGVsbG8=", out, sizeof out) == 5 && memcmp(out, "hello", 5) == 0);
     CHECK(base64_decode("a*", out, sizeof out) < 0);
+    CHECK(base64_decode("A", out, sizeof out) < 0);
+    CHECK(base64_decode("AAAA=", out, sizeof out) < 0);
+    CHECK(base64_decode("AB==", out, sizeof out) < 0);
+    CHECK(base64_decode("AA==", out, sizeof out) == 1);
     uint32_t v;
     CHECK(version_parse("1.2.3", &v) && v == 0x010203u);
     CHECK(!version_parse("1.2", &v));

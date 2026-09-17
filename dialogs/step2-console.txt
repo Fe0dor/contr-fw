@@ -1,0 +1,38 @@
+# Шаг 2: консоль при клиенте (FW-114, FW-116, FW-117), провижининг (FW-224, FW-225, FW-227).
+# Консоль — stdin исполнителя (contr-host, contr_emu --console); у платы консоли в прогонщике
+# нет, файл на ней пропускается с первой директивы #console.
+
+> *IDN?
+<~ G{G};TESTDUT,CONTR-R1,.*
+# с консоли при клиенте: запрос без префикса, установка — BUSY, сервисная — CONSOLE_ONLY
+#console > *IDN?
+<~ TESTDUT,CONTR-R1,.*
+#console > SYST:UPD:ABORT
+< ERR:BUSY
+#console > SYST:PROV:SERIAL X
+< ERR:CONSOLE_ONLY
+# SAFE с консоли принимается всегда и двигает поколение клиента (FW-107, FW-210, FW-221)
+#console > SAFE
+< OK
+> *IDN?
+<~ G{G+1};TESTDUT,CONTR-R1,.*
+
+# без клиента: провижининг с консоли однократный, сеть перезаписываемая
+#disconnect
+#console > SYST:PROV:SERIAL CONTR-0007
+< OK
+#console > SYST:PROV:SERIAL CONTR-0008
+< ERR:PROVISIONED
+#console > *IDN?
+< TESTDUT,CONTR-R1,CONTR-0007,0.2.0
+#console > SYST:PROV:NET static,192.168.0.21,255.255.255.0,192.168.0.100
+< OK
+#console > SYST:PROV:NET dhcp
+< OK
+#console > SYST:PROV:NET static,1.2.3
+< ERR:RANGE,net
+#console > SYST:ERR?
+<~ .*RANGE,net
+#connect
+> *IDN?
+<~ G\d+;TESTDUT,CONTR-R1,CONTR-0007,0\.2\.0

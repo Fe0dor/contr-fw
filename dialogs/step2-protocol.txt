@@ -1,0 +1,63 @@
+# Шаг 2: соединение, протокол, поколение, стек ошибок, безопасное состояние.
+# Исполнители: contr-host, contr_emu (tools/run_dialogs.py) и плата (--tcp).
+# {G} — поколение из последнего ответа, {G+1} — на единицу больше.
+
+# FW-100, FW-101: соединение — вход в безопасное состояние
+> *IDN?
+<~ G{G};TESTDUT,CONTR-R1,[A-Za-z0-9_-]+,0\.2\.0
+> SYST:SAFE?
+<~ G{G};\d+,CONNECT,OK,SILENT,OK,OK,OK,OK,\d+
+
+# FW-109, FW-110, FW-108: ошибки не двигают поколение клиента
+> FOO:BAR 1
+< G{G};ERR:UNKNOWN_CMD
+> *IDN? x
+< G{G};ERR:RANGE,args
+> SYST:ERR?
+< G{G};UNKNOWN_CMD;RANGE,args
+> SYST:ERR?
+< G{G};NONE
+
+# FW-102: второе соединение
+#second-client < ERR:BUSY
+> *IDN?
+<~ G{G};TESTDUT,.*
+
+# FW-204, FW-205, FW-221: SAFE клиента — вход, поколение растёт на единицу
+> SAFE
+< G{G+1};OK
+> SYST:SAFE?
+<~ G{G};\d+,SAFE,OK,SILENT,OK,OK,OK,OK,\d+
+
+# FW-117: провижининг по TCP запрещён
+> SYST:PROV:SERIAL X
+< G{G};ERR:CONSOLE_ONLY
+
+# FW-234: обновление вне последовательности
+> SYST:UPD:DATA AAAA
+< G{G};ERR:UPD_SEQ
+> SYST:UPD:CONFIRM
+< G{G};ERR:UPD_SEQ
+> SYST:UPD:STAT?
+< G{G};IDLE,0,0
+
+# FW-223: константы
+> SYST:CONF?
+<~ G{G};BOARD_REV=1;PWRON_AB_ON_LEVEL=1;.*;NET_DEFAULT_ADDR=192\.168\.0\.20;.*;OPT_IWDG_SW=0
+
+# FW-230: сеть
+> SYST:NET?
+<~ G{G};(static|dhcp|dhcp-fallback),02:[0-9A-F:]{14},\d+\.\d+\.\d+\.\d+,(UP|DOWN)
+
+# FW-130, FW-131: таблица реле
+> INTERLOCK:LIST?
+<~ G{G};V1\.1,1,ext,SR1\.2\.A,V;.*;M4,33,int,PG8,M\+RA;.*;L5,81,load,SR0\.1\.C,;rev1\.1,sha256:[0-9a-f]{64}
+
+# FW-214: самодиагностика
+> TEST:ALL?
+<~ G{G};(OK|WARN|FAIL);SR0:.*;SR1:UNVERIFIED;.*;PROV:.*;OPTBYTES:(OK|MISMATCH);NET:.*;RESET:.*;SAFE:.*
+
+# FW-218: потеря клиента — вход по CLIENT_LOST, затем CONNECT: поколение +2
+#reconnect
+> SYST:SAFE?
+<~ G{G+2};\d+,CONNECT,OK,SILENT,OK,OK,OK,OK,\d+

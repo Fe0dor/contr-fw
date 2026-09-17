@@ -51,6 +51,7 @@ git clone --recurse-submodules https://github.com/Fe0dor/contr-fw.git
 cd contr-fw
 python -m pip install -r requirements-dev.txt
 python -m pip install -e ui
+python -m pip install -e emu
 ```
 
 Отладчик NUCLEO должен быть перепрошит в J-Link OB
@@ -65,6 +66,9 @@ cmake --workflow --preset host      # логика + ctest на хосте
 cmake --workflow --preset target    # образ build/target/contr-fw.{elf,hex,bin}
 python -m pytest                    # генератор и интерфейс
 python tools/gen_board.py --check   # gen/ соответствует relays.yaml
+cmake --workflow --preset bringup   # наладочная прошивка с DBG:*
+python tools/run_dialogs.py --host build/host/contr-host.exe  # Windows; без .exe на Mac
+python tools/run_dialogs.py --emu
 ```
 
 На Windows, если в системе есть и MSVC, и GCC, задайте `CC=gcc` перед пресетом `host`.
@@ -77,7 +81,19 @@ python tools/console.py             # консоль USART3, автопоиск 
 python -m contr_ui --com COM5       # интерфейс: терминал, TCP или COM, кнопка SAFE
 ```
 
-Образ шага 0 мигает LD1 (PB0) с периодом 1 с и возвращает эхом всё принятое по USART3.
+Версия 0.2.0 реализует ядро протокола шага 2. Рабочая сборка не содержит `DBG:*`;
+для наладки выберите `build/bringup/contr-fw.hex`. Приёмка шагов 1–2 ещё открыта:
+см. `docs/protocols/step-1.md` и `step-2.md`.
+
+Запуск эмулятора: `python -m contr_emu --port 5025` (localhost).
+Интерфейс к нему: `python -m contr_ui --host 127.0.0.1`.
+Интерфейс пишет журнал в `logs/`, опрашивает ошибки и события; период по умолчанию 500 мс.
+Tab дополняет команды и имена из `INTERLOCK:LIST?`, стрелки переключают историю.
+Файлы сценариев содержат команды, комментарии, `#wait <мс>` и `#prompt <действие>`.
+Первая ошибка останавливает сценарий. SAFE всегда доступен отдельно.
+Мастер принимает `.upd`, показывает прогресс, переподключается после COMMIT и подтверждает
+пробный запуск. «Не подтверждать» оставляет таймаут для проверки отката.
+На плате обновление разрешается только после проверки опционных байтов.
 
 ## Единый источник
 

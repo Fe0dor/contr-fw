@@ -33,6 +33,7 @@ struct channel {
     char partial[CMD_LINE_MAX + 1];
     size_t partial_len;
     bool partial_overflow;
+    bool ring_overflow;
     struct line queue[LINE_QUEUE];
     size_t q_head, q_count;
     bool open;
@@ -49,12 +50,20 @@ static volatile bool client_lost;
 static void ring_push(struct channel *c, const uint8_t *buf, size_t len)
 {
     for (size_t i = 0; i < len; i++) {
+        if (c->ring_overflow) {
+            if (buf[i] != '\n') continue;
+            c->ring_overflow = false;
+        }
         size_t next = (c->tail + 1) % RING_SIZE;
         if (next == c->head) {
-            /* переполнение: байты теряются, но терминатор сохраняется — строка длиннее
-             * кольца заканчивается одним ERR:RANGE, парсер ресинхронизируется (А5) */
-            if (buf[i] == '\n') {
-                c->ring[(c->tail + RING_SIZE - 1) % RING_SIZE] = '\n';
+            /* Reject corrupted input in full; never execute a truncated command. */
+            c->head = c->tail;
+            c->partial_len = 0;
+            c->partial_overflow = true;
+            c->ring_overflow = buf[i] != '\n';
+            if (!c->ring_overflow) {
+                c->ring[c->tail] = '\n';
+                c->tail = next;
             }
             continue;
         }
@@ -78,6 +87,7 @@ static void channel_reset(struct channel *c)
     c->head = c->tail = 0;
     c->partial_len = 0;
     c->partial_overflow = false;
+    c->ring_overflow = false;
     c->q_head = c->q_count = 0;
 }
 
@@ -88,6 +98,7 @@ bool core_net_on_accept(void)
     if (observed.client_connected || accept_pending) {
         return false;
     }
+    channel_reset(&channels[CH_TCP]);
     accept_pending = true;
     return true;
 }
@@ -335,7 +346,6 @@ void core_step(void)
     }
     if (accept_pending) {
         accept_pending = false;
-        channel_reset(&channels[CH_TCP]);
         channels[CH_TCP].open = true;
         observed.client_connected = true;
         log_event("client connected");

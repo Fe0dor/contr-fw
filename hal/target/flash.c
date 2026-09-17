@@ -1,13 +1,12 @@
 /* Flash STM32F767ZI в двухбанковом режиме (nDBANK=0): два банка по 1 МБ, в каждом
  * 4×16 КБ, 64 КБ, 7×128 КБ. Сектор CFG — последний сектор (128 КБ) активного банка по
  * адресу 0x080E0000; используется первые HAL_CFG_SIZE байт. Перед переключением банка
- * ядро копирует CFG в неактивный банк (core/update.c), поэтому после подмены BFB2 записи
+ * ядро копирует CFG в неактивный банк (core/update.c), поэтому после подмены банков записи
  * на месте (FW-238).
  *
- * Нумерация секторов при активной подмене (SWP_FB) в RM0410 задана неоднозначно, поэтому
- * стирание сектора проверяется чтением: если по ожидаемому адресу не 0xFF, повторяется с
- * номером другого банка. Оба кандидата — зарезервированные хвосты банков, образ их не
- * занимает (образ ≤ 896 КБ), содержимое CFG на время стирания держится в ОЗУ ядром.
+ * AN4826 fig.12: сектор сохраняет физический номер при SWP_FB. SNB второго банка
+ * имеет смещение 16 (HAL FLASH_Erase_Sector добавляет 4 к номерам 12…23).
+ * При ошибке проверки операция прекращается; другой банк никогда не стирается.
  */
 #include "hal.h"
 #include "target.h"
@@ -17,9 +16,6 @@
 #define CFG_OFFSET (HAL_BANK_SIZE - 128u * 1024u) /* 0xE0000 */
 #define SECTOR_LAST 11u                             /* последний сектор банка */
 #define SNB_BANK2 16u
-#ifndef FLASH_OPTCR_BFB2
-#define FLASH_OPTCR_BFB2 (1u << 4) /* Dual-bank boot: в заголовке CMSIS F767 бита нет */
-#endif
 
 static bool swapped(void)
 {
@@ -74,20 +70,18 @@ static int erase_snb(uint32_t snb)
     return rc;
 }
 
-/* Стереть сектор по отображённому адресу его начала: номер по отображению,
- * при несовпадении — по физической нумерации (см. заголовок). */
+/* Стереть единственный физический сектор по отображённому адресу. */
 static int erase_sector_at(uint32_t mapped_addr, uint32_t sector, size_t check_len)
 {
     bool in_bank2_mapped = mapped_addr >= BANK2_BASE;
-    uint32_t snb_mapped = sector + (in_bank2_mapped ? SNB_BANK2 : 0u);
-    uint32_t snb_other = sector + (in_bank2_mapped ? 0u : SNB_BANK2);
-    if (erase_snb(snb_mapped) != 0) {
+    /* SNB selects the physical bank. AN4826 fig.12: swapping changes
+     * addresses, not sector identities. Never probe by erasing another bank. */
+    if (FLASH->OPTCR & FLASH_OPTCR_nDBANK) {
         return -1;
     }
-    if (blank((const uint8_t *)mapped_addr, check_len)) {
-        return 0;
-    }
-    if (erase_snb(snb_other) != 0) {
+    bool physical_bank2 = in_bank2_mapped != swapped();
+    uint32_t snb = sector + (physical_bank2 ? SNB_BANK2 : 0u);
+    if (erase_snb(snb) != 0) {
         return -1;
     }
     return blank((const uint8_t *)mapped_addr, check_len) ? 0 : -1;
@@ -95,7 +89,7 @@ static int erase_sector_at(uint32_t mapped_addr, uint32_t sector, size_t check_l
 
 static int program(uint32_t addr, const uint8_t *data, size_t len)
 {
-    if ((addr & 3u) || (len & 3u)) {
+    if ((FLASH->OPTCR & FLASH_OPTCR_nDBANK) || (addr & 3u) || (len & 3u)) {
         return -1;
     }
     unlock();
@@ -146,8 +140,7 @@ const uint8_t *hal_bank_inactive_base(void)
 
 int hal_bank_erase_inactive(uint32_t sector)
 {
-    /* сектора неактивного банка по отображению: 0…11 → SNB 16…27; при физической
-     * нумерации во время подмены это 0…11 — проверка чтением ловит расхождение */
+    /* Отображённый неактивный банк, физический банк определяется по SWP_FB. */
     static const uint32_t sizes[HAL_BANK_SECTORS] = {16u, 16u, 16u, 16u, 64u, 128u, 128u, 128u, 128u, 128u, 128u, 128u};
     if (sector >= HAL_BANK_SECTORS) {
         return -1;
@@ -174,16 +167,19 @@ uint8_t hal_bank_active(void)
 
 int hal_bank_set_boot(uint8_t bank)
 {
+    if ((bank != 1u && bank != 2u) ||
+        (FLASH->OPTCR & (FLASH_OPTCR_nDBANK | FLASH_OPTCR_nDBOOT))) {
+        return -1;
+    }
     unlock();
     if (FLASH->OPTCR & FLASH_OPTCR_OPTLOCK) {
         FLASH->OPTKEYR = 0x08192A3Bu;
         FLASH->OPTKEYR = 0x4C5D6E7Fu;
     }
-    if (bank == 2u) {
-        FLASH->OPTCR |= FLASH_OPTCR_BFB2;
-    } else {
-        FLASH->OPTCR &= ~FLASH_OPTCR_BFB2;
-    }
+    /* STM32F767 has BOOT_ADD0, not F4's BFB2. OPTCR bit 4 is WWDG_SW.
+     * Boot address encoding is address >> 14 (RM0410, FLASH_OPTCR1). */
+    uint32_t boot = (bank == 2u ? BANK2_BASE : BANK1_BASE) >> 14;
+    FLASH->OPTCR1 = (FLASH->OPTCR1 & ~FLASH_OPTCR1_BOOT_ADD0) | boot;
     FLASH->OPTCR |= FLASH_OPTCR_OPTSTRT;
     int rc = wait_done();
     FLASH->OPTCR |= FLASH_OPTCR_OPTLOCK;

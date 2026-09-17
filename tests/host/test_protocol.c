@@ -210,8 +210,29 @@ static void test_test_all(void)
     CHECK(strstr(con_cmd("TEST:ALL?"), "OPTBYTES:MISMATCH") != NULL);
 }
 
+static void test_early_packet_and_overflow_recovery(void)
+{
+    device_boot();
+    CHECK(host_net_connect());
+    host_net_push_line("*IDN?"); /* first packet before accept is handled by core_step */
+    device_run(4);
+    CHECK(host_net_take_line(reply_buf, sizeof reply_buf));
+    CHECK_PREFIX(reply_buf, "G1;TESTDUT,");
+
+    char flood[700];
+    memset(flood, 'A', sizeof flood);
+    memcpy(flood, "SAFE", 4);
+    flood[sizeof flood - 1] = '\n';
+    host_net_push((const uint8_t *)flood, sizeof flood);
+    device_run(4);
+    CHECK(host_net_take_line(reply_buf, sizeof reply_buf));
+    CHECK_STR(reply_buf, "G1;ERR:RANGE");
+    CHECK_PREFIX(tcp_cmd("*IDN?"), "G1;TESTDUT,");
+}
+
 int main(void)
 {
+    test_early_packet_and_overflow_recovery();
     test_idn_and_prefix();
     test_unknown_and_range();
     test_second_client_busy();

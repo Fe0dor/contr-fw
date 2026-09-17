@@ -7,3 +7,4 @@ __pycache__/
 *.jlink
 JLink.log
 .DS_Store
+logs/

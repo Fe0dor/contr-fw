@@ -65,6 +65,8 @@ static int b64val(char c)
 
 int base64_decode(const char *in, uint8_t *out, size_t max)
 {
+    size_t length = strlen(in);
+    if (!length || length % 4u != 0) return -1;
     size_t n = 0;
     uint32_t acc = 0;
     int bits = 0;
@@ -91,7 +93,7 @@ int base64_decode(const char *in, uint8_t *out, size_t max)
             out[n++] = (uint8_t)(acc >> bits);
         }
     }
-    if (pad > 2) {
+    if (pad > 2 || bits != pad * 2 || (bits && (acc & ((1u << bits) - 1u)))) {
         return -1;
     }
     return (int)n;
@@ -371,10 +373,12 @@ void cmd_upd_commit(struct cmdctx *c)
         return;
     }
     log_event("update: commit %u.%u.%u to bank %u", h.ver_major, h.ver_minor, h.ver_patch, target);
-    resp_ok(c);
     if (hal_bank_set_boot(target) != 0) {
+        reset_receiving();
+        resp_err(c, ERR_UPD_SEQ, "boot");
         return;
     }
+    resp_ok(c);
     hal_reset();
 }
 

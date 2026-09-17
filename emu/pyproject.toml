@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "contr-emu"
+version = "0.2.0"
+description = "Эмулятор устройства стенда CONTR: тот же протокол и таблица блокировок, TCP 5025"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.setuptools.packages.find]
+include = ["contr_emu*"]
