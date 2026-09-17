@@ -14,6 +14,7 @@
 from __future__ import annotations
 
 import argparse
+import glob
 import os
 import shutil
 import subprocess
@@ -57,6 +58,11 @@ def find_jlink(explicit: str | None) -> str:
         found = shutil.which(cand) if os.sep not in cand else (cand if Path(cand).exists() else None)
         if found:
             return found
+    # установщик SEGGER кладёт версию в имя каталога: JLink_V818; берём самую свежую
+    for pattern in (r"C:\Program Files\SEGGER\JLink*\JLink.exe", "/Applications/SEGGER/JLink*/JLinkExe"):
+        matches = sorted(glob.glob(pattern))
+        if matches:
+            return matches[-1]
     raise FileNotFoundError(
         "J-Link Commander не найден: установите SEGGER J-Link Software, "
         "добавьте его в PATH или задайте JLINK_EXE / --jlink"
