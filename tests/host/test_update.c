@@ -16,6 +16,8 @@ static void build_image(uint8_t revision, const char *version, size_t len)
     for (size_t i = 0; i < len; i++) {
         image[i] = (uint8_t)(i * 7u + 3u);
     }
+    uint32_t vectors[2] = {0x20080000u, 0x08000225u};
+    memcpy(image, vectors, sizeof vectors);
     struct fw_header h;
     memset(&h, 0, sizeof h);
     memcpy(h.magic, "CONTRFW1", 8);
@@ -74,6 +76,9 @@ static const char *begin(void)
 static void test_happy_path_and_confirm(void)
 {
     device_boot();
+    CHECK_STR(con_cmd("SYST:PROV:SERIAL MODEL-ONLY"), "OK");
+    CHECK_STR(con_cmd("SYST:PROV:NET dhcp"), "OK");
+    const uint8_t *old_cfg = hal_cfg_base();
     build_image(1, "0.3.0", 1000);
     CHECK_STR(con_cmd("SYST:UPD:DATA AAAA"), "ERR:UPD_SEQ");      /* FW-234 */
     CHECK_STR(con_cmd("SYST:UPD:CONFIRM"), "ERR:UPD_SEQ");
@@ -96,12 +101,23 @@ static void test_happy_path_and_confirm(void)
     host_set_active_bank(2);
     board_early_init();
     core_init();
+    CHECK(hal_cfg_base() != old_cfg);
     CHECK(upd_get_state() == UPD_TRIAL);
     CHECK(cfg_get_trial(&t) && t.boot_count == 1);
+    char serial[CFG_SERIAL_MAX + 1];
+    struct cfg_net net;
+    CHECK(cfg_get_serial(serial) && strcmp(serial, "MODEL-ONLY") == 0);
+    CHECK(cfg_get_net(&net) && net.dhcp == 1);
     CHECK_STR(con_cmd("SYST:UPD:STAT?"), "TRIAL,0,0");
     CHECK_STR(con_cmd("SYST:UPD:CONFIRM"), "OK");
     CHECK(cfg_get_trial(&t) && t.confirmed == 1);
     CHECK_STR(con_cmd("SYST:UPD:CONFIRM"), "ERR:UPD_SEQ");
+    /* Confirm modified only the new physical CFG; rollback copy is independent. */
+    host_set_active_bank(1);
+    cfg_init();
+    CHECK(cfg_get_trial(&t) && t.boot_count == 0 && !t.confirmed);
+    CHECK(cfg_get_serial(serial) && strcmp(serial, "MODEL-ONLY") == 0);
+    CHECK(cfg_get_net(&net) && net.dhcp == 1);
 }
 
 static void test_rollback_by_timeout_and_second_boot(void)
@@ -180,6 +196,24 @@ static void test_rejections(void)
     CHECK_STR(con_cmd("SYST:UPD:STAT?"), "IDLE,0,0");
 }
 
+static void test_bad_vectors(void)
+{
+    static const uint32_t invalid[][2] = {
+        {0x20000000u, 0x08000225u}, {0x20080008u, 0x08000225u},
+        {0x20080001u, 0x08000225u}, {0x20080000u, 0x08000224u},
+        {0x20080000u, 0x08000001u}, {0x20080000u, 0x08000401u},
+    };
+    for (unsigned i = 0; i < sizeof invalid / sizeof invalid[0]; i++) {
+        device_boot();
+        build_image(1, "0.3.0", 1024);
+        memcpy(image, invalid[i], sizeof invalid[i]);
+        CHECK_STR(begin(), "OK"); /* CRC includes the invalid vectors */
+        CHECK_STR(send_image(256), "OK");
+        CHECK_STR(con_cmd("SYST:UPD:COMMIT"), "ERR:UPD_HEADER,vectors");
+        CHECK(host_boot_bank() == 1 && !host_reset_requested());
+    }
+}
+
 static void test_utils(void)
 {
     /* crc32 как zlib: "123456789" → 0xCBF43926 */
@@ -198,6 +232,7 @@ static void test_utils(void)
 
 int main(void)
 {
+    test_bad_vectors();
     test_utils();
     test_happy_path_and_confirm();
     test_rollback_by_timeout_and_second_boot();

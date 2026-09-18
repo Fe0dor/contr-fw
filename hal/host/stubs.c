@@ -19,8 +19,7 @@ static struct {
     size_t spia_reply_len;
     bool reset_requested;
     uint32_t reset_cause;
-    uint8_t cfg[HAL_CFG_SIZE];
-    uint8_t bank[HAL_BANK_SIZE];
+    uint8_t bank[2][HAL_BANK_SIZE];
     uint8_t active_bank, boot_bank;
     struct hal_optbytes opt;
     uint8_t uid[12];
@@ -45,7 +44,6 @@ void host_mem_channels_reset(void);
 void host_reset_all(void)
 {
     memset(&h, 0, sizeof h);
-    memset(h.cfg, 0xFF, sizeof h.cfg);
     memset(h.bank, 0xFF, sizeof h.bank);
     h.active_bank = 1;
     h.boot_bank = 1;
@@ -242,12 +240,12 @@ static int flash_program(uint8_t *dst, const uint8_t *data, size_t len)
     return 0;
 }
 
-const uint8_t *hal_cfg_base(void) { return h.cfg; }
-uint8_t *host_cfg_memory(void) { return h.cfg; }
+uint8_t *host_cfg_memory(void) { return h.bank[h.active_bank - 1u] + HAL_BANK_SIZE - 128u * 1024u; }
+const uint8_t *hal_cfg_base(void) { return host_cfg_memory(); }
 
 int hal_cfg_erase(void)
 {
-    memset(h.cfg, 0xFF, sizeof h.cfg);
+    memset(host_cfg_memory(), 0xFF, HAL_CFG_SIZE);
     h.flash_ops++;
     journal("cfg_erase");
     return 0;
@@ -259,11 +257,11 @@ int hal_cfg_write(uint32_t offset, const uint8_t *data, size_t len)
         return -1;
     }
     h.flash_ops++;
-    return flash_program(h.cfg + offset, data, len);
+    return flash_program(host_cfg_memory() + offset, data, len);
 }
 
-const uint8_t *hal_bank_inactive_base(void) { return h.bank; }
-uint8_t *host_bank_memory(void) { return h.bank; }
+uint8_t *host_bank_memory(void) { return h.bank[2u - h.active_bank]; }
+const uint8_t *hal_bank_inactive_base(void) { return host_bank_memory(); }
 
 int hal_bank_erase_inactive(uint32_t sector)
 {
@@ -275,7 +273,7 @@ int hal_bank_erase_inactive(uint32_t sector)
     for (uint32_t s = 0; s < sector; s++) {
         off += sizes[s] * 1024u;
     }
-    memset(h.bank + off, 0xFF, sizes[sector] * 1024u);
+    memset(host_bank_memory() + off, 0xFF, sizes[sector] * 1024u);
     h.flash_ops++;
     journal("bank_erase %lu", (unsigned long)sector);
     return 0;
@@ -287,7 +285,7 @@ int hal_bank_write(uint32_t offset, const uint8_t *data, size_t len)
         return -1;
     }
     h.flash_ops++;
-    return flash_program(h.bank + offset, data, len);
+    return flash_program(host_bank_memory() + offset, data, len);
 }
 
 uint8_t hal_bank_active(void) { return h.active_bank; }

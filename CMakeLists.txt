@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.25)
 #   host   — логика core/ с заглушками hal/host: тесты ctest и процесс contr-host
 #            для прогонщика диалогов (пресет `host`).
 # Версия проекта — версия прошивки (*IDN?, заголовок образа).
-project(contr_fw VERSION 0.2.4 LANGUAGES C ASM)
+project(contr_fw VERSION 0.2.5 LANGUAGES C ASM)
 
 option(CONTR_HIL_HANG_AFTER_INIT "HIL ONLY: hang after boot check to test watchdog rollback" OFF)
 

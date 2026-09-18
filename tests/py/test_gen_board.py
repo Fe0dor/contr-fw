@@ -185,3 +185,31 @@ def test_address_uniqueness_and_format(table: gen_board.Table) -> None:
     addresses = [r.address for r in table.relays]
     assert len(addresses) == len(set(addresses))
     assert all(gen_board.PIN_RE.match(a) or gen_board.SR_RE.match(a) for a in addresses)
+
+
+@pytest.mark.parametrize('address', ['PA16', 'PK99', 'PA01', 'SR0.3.A', 'SR1.4.H'])
+def test_physical_address_bounds(tmp_path, address):
+    def mutate(raw):
+        raw['relays'][0]['address'] = address
+    with pytest.raises(gen_board.SourceError):
+        gen_board.load_table(_write_variant(tmp_path, mutate))
+
+
+def test_storage_field_bounds(tmp_path):
+    def number(raw):
+        raw['next_number'] = 257
+        raw['relays'][0]['number'] = 256
+    def groups(raw):
+        raw['groups'] += [{'name': f'Extra{i}'} for i in range(17)]
+    for mutate in (number, groups):
+        with pytest.raises(gen_board.SourceError):
+            gen_board.load_table(_write_variant(tmp_path, mutate))
+
+
+def test_signal_gpio_bounds(tmp_path):
+    raw = yaml.safe_load(gen_board.DEFAULT_SIGNALS.read_text('utf-8'))
+    raw['signals'][0]['address'] = 'PA16'
+    path = tmp_path / 'signals.yaml'
+    path.write_text(yaml.safe_dump(raw), 'utf-8')
+    with pytest.raises(gen_board.SourceError):
+        gen_board.load_signals(path, ())

@@ -19,6 +19,7 @@
 
 #define RING_SIZE 512u
 #define LINE_QUEUE 4u
+#define WRITE_STALL_MS 500u
 
 struct line {
     char text[CMD_LINE_MAX + 1];
@@ -44,6 +45,10 @@ static bool executing;
 static bool abort_requested;
 static volatile bool accept_pending;
 static volatile bool client_lost;
+static enum channel_id next_channel;
+static bool reply_started;
+static uint32_t reply_started_ms;
+static bool console_resync;
 
 /* ---- кольца ---- */
 
@@ -95,7 +100,7 @@ static void channel_reset(struct channel *c)
 
 bool core_net_on_accept(void)
 {
-    if (observed.client_connected || accept_pending) {
+    if (observed.client_connected || accept_pending || client_lost) {
         return false;
     }
     channel_reset(&channels[CH_TCP]);
@@ -145,6 +150,8 @@ static void pump_channel(struct channel *c)
     while (c->q_count < LINE_QUEUE && ring_pop(c, &b)) {
         if (b == '\n') {
             enqueue_line(c);
+        } else if (b == 0) {
+            c->partial_overflow = true; /* never execute a C-string prefix */
         } else if (b == '\r') {
             continue;
         } else if (c->partial_len < CMD_LINE_MAX) {
@@ -221,20 +228,54 @@ enum wait_result wait_for(bool (*cond)(void *), void *arg, uint32_t deadline_ms,
 
 bool channel_write(enum channel_id ch, const uint8_t *buf, size_t len)
 {
+    if (!reply_started) {
+        reply_started = true;
+        reply_started_ms = hal_millis();
+    }
     size_t sent = 0;
+    uint32_t last_progress = hal_millis();
     while (sent < len) {
         size_t n;
         if (ch == CH_TCP) {
             if (!observed.client_connected || client_lost) {
                 return false;
             }
+            if ((uint32_t)(hal_millis() - reply_started_ms) >= WRITE_STALL_MS) {
+                hal_net_close_client();
+                core_net_on_closed();
+                return false;
+            }
             n = hal_net_send(buf + sent, len - sent);
         } else {
-            n = hal_console_write(buf + sent, len - sent);
+            if (console_resync) {
+                /* Terminate the old, possibly partial frame before any new
+                 * reply. The client must discard its timed-out transaction. */
+                if (hal_console_write((const uint8_t *)"\n", 1) == 1) {
+                    console_resync = false;
+                }
+                n = 0;
+            } else {
+                n = hal_console_write(buf + sent, len - sent);
+            }
         }
         sent += n;
+        if (n) last_progress = hal_millis();
         if (sent < len) {
-            svc_poll(); /* ожидание места; SAFE здесь не прерывает: кадр дописывается */
+            svc_poll();
+            /* A partial TCP frame cannot be resumed as a new reply. Close the
+             * session on SAFE or a stalled reader; core_step then enters SAFE.
+             * UART keeps frame order, but a failed transmitter cannot hang us. */
+            if ((ch == CH_TCP && abort_requested)
+                || (ch == CH_TCP && (uint32_t)(hal_millis() - reply_started_ms) >= WRITE_STALL_MS)
+                || (uint32_t)(hal_millis() - last_progress) >= WRITE_STALL_MS) {
+                if (ch == CH_TCP) {
+                    hal_net_close_client();
+                    core_net_on_closed();
+                } else {
+                    console_resync = true;
+                }
+                return false;
+            }
         }
     }
     return true;
@@ -274,6 +315,9 @@ void core_init(void)
     channels[CH_CONSOLE].open = true;
     channels[CH_TCP].open = false;
     executing = false;
+    next_channel = CH_CONSOLE;
+    reply_started = false;
+    console_resync = false;
     abort_requested = false;
     accept_pending = false;
     client_lost = false;
@@ -312,6 +356,7 @@ void core_init(void)
 
 static void execute_line(enum channel_id ch, struct line *l)
 {
+    reply_started = false;
     if (l->overflow) {
         cmd_reply_overflow(ch);
         return;
@@ -336,7 +381,9 @@ void core_step(void)
 
     if (client_lost) {
         client_lost = false;
-        if (observed.client_connected) {
+        bool had_client = observed.client_connected || accept_pending;
+        accept_pending = false;
+        if (had_client) {
             observed.client_connected = false;
             channel_reset(&channels[CH_TCP]);
             channels[CH_TCP].open = false;
@@ -354,12 +401,16 @@ void core_step(void)
     }
 
     struct line l;
-    if (observed.client_connected && dequeue_line(&channels[CH_TCP], &l)) {
-        execute_line(CH_TCP, &l);
-        return;
-    }
-    if (dequeue_line(&channels[CH_CONSOLE], &l)) {
-        execute_line(CH_CONSOLE, &l);
+    /* Fair arbitration preserves each channel's FIFO reply order. A queued
+     * console command no longer depends on a gap in TCP traffic. */
+    for (unsigned i = 0; i < CH_COUNT; i++) {
+        enum channel_id ch = (enum channel_id)((next_channel + i) % CH_COUNT);
+        if (ch == CH_TCP && !observed.client_connected) continue;
+        if (dequeue_line(&channels[ch], &l)) {
+            next_channel = (enum channel_id)((ch + 1) % CH_COUNT);
+            execute_line(ch, &l);
+            return;
+        }
     }
 }
 

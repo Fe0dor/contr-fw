@@ -19,6 +19,7 @@ static struct {
     uint32_t static_addr;
     struct hal_net_config cfg;
     size_t send_limit;
+    void (*poll_hook)(void);
 } m;
 
 static size_t push(struct ring *r, const uint8_t *buf, size_t len)
@@ -95,7 +96,8 @@ void hal_net_init(const struct hal_net_config *cfg)
     m.initialized = true;
 }
 
-void hal_net_poll(void) {}
+void host_net_set_poll_hook(void (*hook)(void)) { m.poll_hook = hook; }
+void hal_net_poll(void) { if (m.poll_hook) m.poll_hook(); }
 bool hal_net_link_up(void) { return m.link_up; }
 uint32_t hal_net_addr(void) { return m.cfg.dhcp ? (m.dhcp_bound ? 0x0A000005u : m.static_addr) : m.cfg.addr; }
 bool hal_net_dhcp_bound(void) { return m.dhcp_bound; }

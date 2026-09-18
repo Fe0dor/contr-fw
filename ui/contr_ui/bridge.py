@@ -35,6 +35,8 @@ class Bridge:
         self.log = self.log_path.open("a", encoding="utf-8", buffering=1)
         self.lock = threading.RLock()
         self.tasks: queue.Queue = queue.Queue()
+        self.epoch = 0
+        self.active_epoch = None
         self.stop = threading.Event()
         self.cancel = threading.Event()
         self.urgent = threading.Event()
@@ -83,13 +85,16 @@ class Bridge:
         with self.lock:
             if self._job_active():
                 raise DeviceError("Сначала остановите выполняемый сценарий или обновление")
-            self.tasks.put((operation, args, future))
+            if self.urgent.is_set():
+                raise DeviceError("Дождитесь ответа SAFE")
+            self.tasks.put((operation, args, future, self.epoch))
         return future
 
     def safe(self):
         with self.lock:
             if not self.state["connected"]:
                 raise DeviceError("Нет подключения к устройству")
+            self.epoch += 1
             self.cancel.set()
             self.urgent.set()
             self.answer.set()
@@ -122,7 +127,7 @@ class Bridge:
 
     def start_job(self, kind, **args):
         with self.lock:
-            if self._job_active() or not self.tasks.empty():
+            if self._job_active() or not self.tasks.empty() or self.urgent.is_set():
                 raise DeviceError("Дождитесь завершения текущей операции")
             if not self.state["connected"]:
                 raise DeviceError("Подключите устройство")
@@ -139,7 +144,7 @@ class Bridge:
             self.cancel.clear()
             self.answer.clear()
             self.state["job"] = {"kind": kind, "status": "running", "progress": 0, "message": "Подготовка"}
-            self.tasks.put((kind, args, Future()))
+            self.tasks.put((kind, args, Future(), self.epoch))
 
     def _job(self, **values):
         with self.lock:
@@ -230,9 +235,12 @@ class Bridge:
         started = time.monotonic()
         deadline = started + 30
         safe_sent = False
-        self.event("tx", command, background=background)
         try:
-            self.link.send(command)
+            with self.lock:
+                if command != "SAFE" and self.active_epoch is not None and self.active_epoch != self.epoch:
+                    raise Cancelled("Команда отменена запросом SAFE")
+                self.event("tx", command, background=background)
+                self.link.send(command)
             while True:
                 if self.urgent.is_set() and command != "SAFE" and not safe_sent:
                     self.urgent.clear()
@@ -262,6 +270,8 @@ class Bridge:
             if command == "SYST:ERR?" and payload(reply) != "NONE":
                 self.event("error", payload(reply))
             return reply
+        except Cancelled:
+            raise
         except (OSError, DeviceError) as exc:
             self._close(str(exc))
             raise
@@ -403,7 +413,7 @@ class Bridge:
                 except Exception as exc:
                     self.event("error", str(exc))
             try:
-                operation, args, future = self.tasks.get(timeout=.05)
+                operation, args, future, epoch = self.tasks.get(timeout=.05)
             except queue.Empty:
                 if self.link and time.monotonic() >= self.next_poll:
                     commands = ("SYST:ERR?", "SYST:LOG?", "SYST:SAFE?", "SYST:NET?")
@@ -416,6 +426,10 @@ class Bridge:
                         self.event("error", str(exc))
                 continue
             try:
+                with self.lock:
+                    if epoch != self.epoch:
+                        raise Cancelled("Операция из очереди отменена запросом SAFE")
+                    self.active_epoch = epoch
                 result = self._dispatch(operation, args)
                 future.set_result(result)
             except Exception as exc:
@@ -425,6 +439,8 @@ class Bridge:
                 with self.lock:
                     self.state["last_error"] = str(exc)
                 future.set_exception(exc)
+            finally:
+                self.active_epoch = None
 
     def close(self):
         self.stop.set()

@@ -350,6 +350,12 @@ class Device:
         if tuple(hdr[17:20]) < UPD_MIN_VERSION:
             self.upd_state = "IDLE"
             raise CommandError("UPD_HEADER", "version")
+        sp = int.from_bytes(img[:4], "little")
+        reset = int.from_bytes(img[4:8], "little")
+        if not (0x20000000 < sp <= 0x20080000 and sp % 8 == 0
+                and reset & 1 and 0x08000224 <= (reset & ~1) <= 0x08000000 + len(img) - 2):
+            self.upd_state = "IDLE"
+            raise CommandError("UPD_HEADER", "vectors")
         target = 2 if self.active_bank == 1 else 1
         self.bank_versions[target] = ".".join(str(v) for v in hdr[17:20])
         self.trial_bank = target

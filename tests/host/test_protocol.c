@@ -233,8 +233,137 @@ static void test_early_packet_and_overflow_recovery(void)
     CHECK_PREFIX(tcp_cmd("*IDN?"), "G1;TESTDUT,");
 }
 
+
+static void test_closed_before_accept_processed(void)
+{
+    device_boot();
+    CHECK(host_net_connect());
+    host_net_disconnect();
+    CHECK(!host_net_connect()); /* drain old events before reusing the slot */
+    device_run(2);
+    CHECK(!observed.client_connected);
+    CHECK(tcp_connect());
+    CHECK_PREFIX(tcp_cmd("*IDN?"), "G");
+}
+
+static void test_console_not_starved(void)
+{
+    device_boot();
+    CHECK(tcp_connect());
+    uint32_t seq = observed.safe.seq;
+    host_console_push_line("SAFE");
+    for (unsigned i = 0; i < 2; i++) {
+        host_net_push_line("*IDN?");
+        core_step();
+        host_net_take_line(reply_buf, sizeof reply_buf);
+    }
+    CHECK(observed.safe.seq == seq + 1);
+    CHECK(host_console_take_line(reply_buf, sizeof reply_buf));
+    CHECK_STR(reply_buf, "OK");
+}
+
+static unsigned poll_count;
+static void blocked_poll(void)
+{
+    host_advance_ms(1);
+    if (++poll_count == 2) host_console_push_line("SAFE");
+}
+
+static void clock_poll(void) { host_advance_ms(1); }
+
+static void test_blocked_writer(void)
+{
+    for (unsigned with_safe = 0; with_safe < 2; with_safe++) {
+        device_boot();
+        CHECK(tcp_connect());
+        static const uint8_t fill[16384] = {0};
+        CHECK(hal_net_send(fill, sizeof fill) == sizeof fill);
+        poll_count = 0;
+        host_net_set_poll_hook(with_safe ? blocked_poll : clock_poll);
+        host_net_push_line("SYST:CONF?");
+        device_run(3);
+        CHECK(host_net_device_closed());
+        CHECK(!observed.client_connected);
+        CHECK(observed.in_safe_state);
+        if (with_safe) {
+            CHECK(host_console_take_line(reply_buf, sizeof reply_buf));
+            CHECK_STR(reply_buf, "OK");
+            CHECK(hal_millis() < 100); /* SAFE interrupts before stall timeout */
+        } else {
+            CHECK(hal_millis() >= 500 && hal_millis() < 600);
+        }
+        host_net_set_poll_hook(NULL);
+        CHECK(tcp_connect());
+    }
+}
+
+static void test_nul_rejected_in_both_channels(void)
+{
+    device_boot();
+    CHECK(tcp_connect());
+    const uint8_t malformed[] = {'S','A','F','E',0,'B','A','D','\n'};
+    uint32_t seq = observed.safe.seq;
+    host_net_push(malformed, sizeof malformed);
+    host_console_push(malformed, sizeof malformed);
+    device_run(4);
+    CHECK(observed.safe.seq == seq);
+    CHECK(host_net_take_line(reply_buf, sizeof reply_buf));
+    CHECK_STR(reply_buf, "G1;ERR:RANGE");
+    CHECK(host_console_take_line(reply_buf, sizeof reply_buf));
+    CHECK_STR(reply_buf, "ERR:RANGE");
+    CHECK_STR(con_cmd("SAFE"), "OK");
+}
+
+
+static void slow_poll(void) { host_advance_ms(10); }
+
+static void test_slow_progress_and_full_command_queue(void)
+{
+    device_boot();
+    CHECK(tcp_connect());
+    for (unsigned i = 0; i < 4; i++) host_console_push_line("*IDN?");
+    host_console_push_line("SAFE"); /* beyond the four-line parser queue */
+    host_net_set_send_limit(1);
+    host_net_set_poll_hook(slow_poll);
+    host_net_push_line("SYST:CONF?");
+    core_step(); /* fair console turn */
+    uint32_t before = hal_millis();
+    core_step(); /* TCP makes progress, but cannot extend the frame deadline */
+    CHECK(host_net_device_closed());
+    CHECK(hal_millis() - before < 600);
+    device_run(6);
+    CHECK(observed.safe.reason == SAFE_REASON_COMMAND);
+    CHECK(observed.in_safe_state);
+    host_net_set_poll_hook(NULL);
+}
+
+static void test_console_frame_resync(void)
+{
+    device_boot();
+    static uint8_t bytes[16384];
+    memset(bytes, 'x', sizeof bytes);
+    CHECK(hal_console_write(bytes, sizeof bytes - 4) == sizeof bytes - 4);
+    host_net_set_poll_hook(clock_poll);
+    host_console_push_line("*IDN?");
+    core_step(); /* first four response bytes fit, then UART times out */
+    CHECK(host_console_take(bytes, sizeof bytes) == sizeof bytes);
+    host_net_set_poll_hook(NULL);
+    host_console_push_line("*IDN?");
+    core_step();
+    CHECK(host_console_take_line(reply_buf, sizeof reply_buf));
+    CHECK_STR(reply_buf, ""); /* completes the previous frame, no joining */
+    CHECK(host_console_take_line(reply_buf, sizeof reply_buf));
+    CHECK_PREFIX(reply_buf, "TESTDUT,");
+}
+
 int main(void)
 {
+    test_slow_progress_and_full_command_queue();
+    test_console_frame_resync();
+    test_closed_before_accept_processed();
+    test_console_not_starved();
+    test_blocked_writer();
+    test_nul_rejected_in_both_channels();
     test_early_packet_and_overflow_recovery();
     test_idn_and_prefix();
     test_unknown_and_range();

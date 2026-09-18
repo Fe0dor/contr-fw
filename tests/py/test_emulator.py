@@ -57,6 +57,7 @@ def test_update_cycle() -> None:
     dev = Device()
     img = bytearray(b"\xff" * 1024)
     hdr = b"CONTRFW1" + b"CONTR\0\0\0" + bytes([1, 0, 3, 0]) + (1024).to_bytes(4, "little") + b"\xff" * 12
+    img[:8] = (0x20080000).to_bytes(4, "little") + (0x08000225).to_bytes(4, "little")
     img[0x200:0x200 + len(hdr)] = hdr
     crc = zlib.crc32(bytes(img)) & 0xFFFFFFFF
     assert dev.execute("console", f"SYST:UPD:BEGIN 1024,{crc:08x},0.3.0") == "OK"

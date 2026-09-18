@@ -113,7 +113,7 @@ class SerialLink(Link):
         import serial  # только здесь: тесты TCP не требуют pyserial
 
         self._port_name = port
-        self._ser = serial.Serial(port, baud, timeout=0.1)
+        self._ser = serial.Serial(port, baud, timeout=0.1, write_timeout=0.5)
 
     @property
     def label(self) -> str:
@@ -126,7 +126,8 @@ class SerialLink(Link):
             raise LinkClosed from exc
 
     def _write(self, data: bytes) -> None:
-        self._ser.write(data)
+        if self._ser.write(data) != len(data):
+            raise OSError("Incomplete serial write")
 
     def _close(self) -> None:
         try:

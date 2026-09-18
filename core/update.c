@@ -362,6 +362,19 @@ void cmd_upd_commit(struct cmdctx *c)
         resp_err(c, ERR_UPD_HEADER, "version");
         return;
     }
+    /* Match the board linker map: 512 KiB RAM and code after the header.
+     * Reset must select Thumb and point to a complete instruction in this image. */
+    uint32_t sp, reset;
+    memcpy(&sp, img, sizeof sp);
+    memcpy(&reset, img + 4, sizeof reset);
+    uint32_t entry = reset & ~1u;
+    if (sp <= 0x20000000u || sp > 0x20080000u || (sp & 7u)
+        || !(reset & 1u) || entry < 0x08000000u + FW_HEADER_OFFSET + sizeof(struct fw_header)
+        || entry > 0x08000000u + upd.expected_size - 2u) {
+        reset_receiving();
+        resp_err(c, ERR_UPD_HEADER, "vectors");
+        return;
+    }
     /* место под дозапись на старте: не меньше двух свободных записей (А11) */
     if (cfg_free_records() < 2 && cfg_compact() != 0) {
         reset_receiving();

@@ -59,6 +59,10 @@ class UpdateImage:
             raise ValueError("Размер в заголовке не совпадает с файлом; выберите .upd")
         if (a, b, c) < (0, 2, 0):
             raise ValueError("Версия ниже минимальной 0.2.0")
+        sp, reset = struct.unpack_from("<II", data)
+        if not (0x20000000 < sp <= 0x20080000 and sp % 8 == 0
+                and reset & 1 and 0x08000224 <= (reset & ~1) <= 0x08000000 + len(data) - 2):
+            raise ValueError("Неверные начальные векторы SP/Reset_Handler")
         return cls(data, "CONTR", rev, f"{a}.{b}.{c}", zlib.crc32(data) & 0xFFFFFFFF)
 
     def commands(self, block_size: int = 256) -> list[str]:

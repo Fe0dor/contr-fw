@@ -78,6 +78,7 @@ void host_net_set_link(bool up);
 void host_net_set_dhcp_bound(bool bound);
 uint32_t host_net_static_addr(void); /* последний hal_net_set_static */
 bool host_net_initialized(void);
+void host_net_set_poll_hook(void (*hook)(void)); /* deterministic service-step injection */
 void host_net_set_send_limit(size_t limit); /* предел hal_net_send за вызов, 0 — нет */
 
 #endif /* HAL_HOST_H */

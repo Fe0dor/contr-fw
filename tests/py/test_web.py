@@ -187,3 +187,77 @@ def test_http_origin_token_validation_and_assets(bridge):
     finally:
         server.shutdown()
         server.server_close()
+
+
+def test_safe_cancels_queued_manual_commands(bridge):
+    from contr_ui.bridge import Cancelled
+
+    class Wire:
+        label = 'fake'
+        def __init__(self):
+            self.lines = queue.Queue()
+            self.started = threading.Event()
+            self.sent = []
+        def send(self, command):
+            self.sent.append(command)
+            if command == 'LONG':
+                self.started.set()
+            elif command == 'SAFE':
+                self.lines.put('G1;ERR:ABORTED')
+                self.lines.put('G2;OK')
+            else:
+                self.lines.put('G2;NEW')
+        def close(self):
+            pass
+
+    wire = Wire()
+    bridge.link = wire
+    bridge.state['connected'] = True
+    bridge.next_poll = time.monotonic() + 100
+    active = bridge.submit('command', command='LONG')
+    assert wire.started.wait(2)
+    queued = bridge.submit('command', command='OLD_SET')
+    bridge.safe()
+    assert active.result(3)['reply'] == 'G1;ERR:ABORTED'
+    with pytest.raises(Cancelled):
+        queued.result(3)
+    assert wire.sent == ['LONG', 'SAFE']
+    assert bridge.snapshot()['safe_acknowledged']
+    assert bridge.submit('command', command='NEW_SET').result(3)['reply'] == 'G2;NEW'
+    assert wire.sent == ['LONG', 'SAFE', 'NEW_SET']
+
+
+def test_safe_cancels_command_already_dequeued(bridge, monkeypatch):
+    from contr_ui.bridge import Cancelled
+    entered, release = threading.Event(), threading.Event()
+    sent = []
+    class Wire:
+        label = 'fake'
+        lines = queue.Queue()
+        def send(self, command):
+            sent.append(command)
+            self.lines.put('G2;OK' if command == 'SAFE' else 'G2;NEW')
+        def close(self):
+            pass
+    bridge.link = Wire()
+    bridge.state['connected'] = True
+    bridge.next_poll = time.monotonic() + 100
+    exchange = bridge._exchange
+    def barrier(command, **kwargs):
+        if command == 'OLD_SET':
+            entered.set()
+            assert release.wait(3)
+        return exchange(command, **kwargs)
+    monkeypatch.setattr(bridge, '_exchange', barrier)
+    future = bridge.submit('command', command='OLD_SET')
+    try:
+        assert entered.wait(2)
+        bridge.safe()
+    finally:
+        release.set()
+    with pytest.raises(Cancelled):
+        future.result(3)
+    eventually(lambda: bridge.snapshot()['safe_acknowledged'])
+    assert sent == ['SAFE']
+    assert bridge.submit('command', command='NEW_SET').result(3)['reply'] == 'G2;NEW'
+    assert sent == ['SAFE', 'NEW_SET']

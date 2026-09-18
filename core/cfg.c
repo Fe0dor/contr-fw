@@ -197,26 +197,9 @@ size_t cfg_snapshot(uint8_t *out, size_t max)
 
 int cfg_compact(void)
 {
-    if (!erase_allowed) {
-        return -2;
-    }
-    uint8_t keep[3 * CFG_RECORD_SIZE];
-    size_t n = cfg_snapshot(keep, sizeof keep);
-    if (hal_cfg_erase() != 0) {
-        return -1;
-    }
-    used_records = 0;
-    for (int t = 0; t < 4; t++) {
-        last_of_type[t] = -1;
-    }
-    for (size_t off = 0; off < n; off += CFG_RECORD_SIZE) {
-        if (hal_cfg_write((uint32_t)off, keep + off, CFG_RECORD_SIZE) != 0) {
-            return -1;
-        }
-        last_of_type[keep[off + 2]] = (int)(off / CFG_RECORD_SIZE);
-        used_records = off / CFG_RECORD_SIZE + 1;
-    }
-    return 0;
+    /* One-sector compaction is not power-fail safe. Until a versioned durable
+     * backup/recovery protocol exists, preserve provisioning and fail closed. */
+    return -2;
 }
 
 void cfg_set_erase_allowed(bool allowed)

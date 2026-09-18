@@ -50,7 +50,7 @@ PULLS = ("none", "up", "down")
 
 NAME_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_.]*$")
 GROUP_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
-PIN_RE = re.compile(r"^P([A-K])(\d{1,2})$")
+PIN_RE = re.compile(r"^P([A-K])(1[0-5]|[0-9])$")
 SR_RE = re.compile(r"^SR([01])\.(\d)\.([A-H])$")
 BLOCKS = ("ext", "test", "int", "mux", "load")
 LOAD_PREFIX = "L"  # реле L1…L5 в файл данных плагина не входят (FW-242)
@@ -147,6 +147,8 @@ def load_table(path: Path) -> Table:
     group_defs = raw.get("groups")
     if not isinstance(group_defs, list):
         raise SourceError("groups: список групп")
+    if len(group_defs) > 16:
+        raise SourceError("groups: максимум 16 для uint16_t")
     group_names: list[str] = []
     reasons: dict[str, str] = {}
     for g in group_defs:
@@ -172,8 +174,8 @@ def load_table(path: Path) -> Table:
         name, number = e.get("name"), e.get("number")
         if not isinstance(name, str) or not NAME_RE.match(name):
             raise SourceError(f"имя реле {name!r} не по шаблону {NAME_RE.pattern}")
-        if not isinstance(number, int) or number < 1:
-            raise SourceError(f"{name}: номер должен быть целым >= 1")
+        if type(number) is not int or not 1 <= number <= 255:
+            raise SourceError(f"{name}: номер должен быть целым 1…255")
         if number in retired:
             raise SourceError(f"{name}: номер {number} выведен из обращения (FW-244)")
         if number >= next_number:
@@ -189,6 +191,9 @@ def load_table(path: Path) -> Table:
         address = e.get("address")
         if not isinstance(address, str) or not (PIN_RE.match(address) or SR_RE.match(address)):
             raise SourceError(f"{name}: адрес {address!r} не вывод STM32 и не SRg.r.o")
+        sr = SR_RE.match(address)
+        if sr and int(sr.group(2)) >= (3, 4)[int(sr.group(1))]:
+            raise SourceError(f"{name}: регистр SR вне цепочки: {address}")
         groups = e.get("groups", [])
         if not isinstance(groups, list) or any(not isinstance(g, str) for g in groups):
             raise SourceError(f"{name}: groups — список имён групп")

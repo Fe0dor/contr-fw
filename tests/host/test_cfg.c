@@ -41,14 +41,19 @@ static void test_fill_and_compact(void)
     CHECK(cfg_set_net(&n) == -2);
     struct cfg_net out;
     CHECK(cfg_get_net(&out) && out.addr == n.addr);
-    /* в безопасном состоянии — уплотнение: остаются серийный номер и последняя сеть */
+    /* Even in SAFE, never erase the only durable copy. */
     cfg_set_erase_allowed(true);
+    unsigned ops = host_flash_ops();
+    uint32_t saved_addr = n.addr;
     n.addr = 0x77;
-    CHECK(cfg_set_net(&n) == 0);
-    CHECK(cfg_free_records() == CFG_RECORDS - 3); /* serial, net(последняя до стирания), net новая */
+    CHECK(cfg_set_net(&n) == -2);
+    CHECK(cfg_compact() == -2);
+    CHECK(host_flash_ops() == ops);
+    cfg_init(); /* reboot: all durable values still present */
+    CHECK(cfg_free_records() == 0);
     char serial[CFG_SERIAL_MAX + 1];
     CHECK(cfg_get_serial(serial) && strcmp(serial, "S1") == 0);
-    CHECK(cfg_get_net(&out) && out.addr == 0x77);
+    CHECK(cfg_get_net(&out) && out.addr == saved_addr);
 }
 
 static void test_trial_record(void)
