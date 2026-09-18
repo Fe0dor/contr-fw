@@ -43,6 +43,16 @@ jobs:
       - name: Тесты Python (генератор, интерфейс)
         run: python -m pytest
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Синтаксис браузерного интерфейса
+        run: node --check ui/contr_ui/static/app.js
+
+      - name: Упаковка интерфейса со статическими ресурсами
+        run: python -m pip wheel ./ui --no-deps --wheel-dir build/wheels
+
       - uses: lukka/get-cmake@latest
 
       - uses: carlosperate/arm-none-eabi-gcc-action@v1

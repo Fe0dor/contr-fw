@@ -4,6 +4,9 @@
 #include "check.h"
 #include "cmd.h"
 #include "config.h"
+#define STR_IMPL(x) #x
+#define STR(x) STR_IMPL(x)
+#define BUILD_VERSION STR(FW_VERSION_MAJOR) "." STR(FW_VERSION_MINOR) "." STR(FW_VERSION_PATCH)
 
 static void test_idn_and_prefix(void)
 {
@@ -12,9 +15,9 @@ static void test_idn_and_prefix(void)
     /* FW-101: вход при подключении → поколение выросло */
     const char *r = tcp_cmd("*IDN?");
     CHECK_PREFIX(r, "G");
-    CHECK(strstr(r, ";TESTDUT,CONTR-R1,UNPROVISIONED,0.2.0") != NULL);
+    CHECK(strstr(r, ";TESTDUT,CONTR-R1,UNPROVISIONED," BUILD_VERSION) != NULL);
     /* FW-114: на консоли тот же ответ без префикса */
-    CHECK_STR(con_cmd("*IDN?"), "TESTDUT,CONTR-R1,UNPROVISIONED,0.2.0");
+    CHECK_STR(con_cmd("*IDN?"), "TESTDUT,CONTR-R1,UNPROVISIONED," BUILD_VERSION);
     /* регистр имени команды не важен */
     CHECK(strstr(tcp_cmd("*idn?"), "TESTDUT,CONTR-R1") != NULL);
 }
@@ -67,11 +70,11 @@ static void test_provisioning(void)
     /* без клиента с консоли — OK, повтор — PROVISIONED (FW-224, FW-225) */
     CHECK_STR(con_cmd("SYST:PROV:SERIAL CONTR-0007"), "OK");
     CHECK_STR(con_cmd("SYST:PROV:SERIAL CONTR-0008"), "ERR:PROVISIONED");
-    CHECK_STR(con_cmd("*IDN?"), "TESTDUT,CONTR-R1,CONTR-0007,0.2.0");
+    CHECK_STR(con_cmd("*IDN?"), "TESTDUT,CONTR-R1,CONTR-0007," BUILD_VERSION);
     /* переживает перезапуск: та же память CFG */
     board_early_init();
     core_init();
-    CHECK_STR(con_cmd("*IDN?"), "TESTDUT,CONTR-R1,CONTR-0007,0.2.0");
+    CHECK_STR(con_cmd("*IDN?"), "TESTDUT,CONTR-R1,CONTR-0007," BUILD_VERSION);
     /* FW-104: без записи — UNPROVISIONED (проверено в test_idn) */
 }
 

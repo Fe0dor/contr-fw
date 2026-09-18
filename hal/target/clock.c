@@ -18,6 +18,9 @@ void SysTick_Handler(void)
 
 static void clock_init(void)
 {
+    /* ROM dual-boot may leave PLL selected and its own SysTick configuration.
+     * Switch to HSI before disabling PLL; PLL cannot stop while it is SYSCLK. */
+    SysTick->CTRL = 0;
     /* регулятор напряжения: шкала 1 и over-drive для 216 МГц */
     RCC->APB1ENR |= RCC_APB1ENR_PWREN;
     (void)RCC->APB1ENR;
@@ -25,6 +28,9 @@ static void clock_init(void)
 
     RCC->CR |= RCC_CR_HSION;
     while (!(RCC->CR & RCC_CR_HSIRDY)) {
+    }
+    RCC->CFGR = (RCC->CFGR & ~RCC_CFGR_SW) | RCC_CFGR_SW_HSI;
+    while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_HSI) {
     }
     RCC->CR &= ~RCC_CR_PLLON;
     while (RCC->CR & RCC_CR_PLLRDY) {

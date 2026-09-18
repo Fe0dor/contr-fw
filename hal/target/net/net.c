@@ -205,6 +205,10 @@ static void apply_static(uint32_t addr, uint32_t mask, uint32_t gw)
     ip4_addr_set_u32(&m, lwip_htonl(mask));
     ip4_addr_set_u32(&g, lwip_htonl(gw));
     netif_set_addr(&netif, &a, &m, &g);
+    /* With DHCP ACD enabled, LwIP does not announce static addresses. */
+    if (netif_is_link_up(&netif)) {
+        etharp_gratuitous(&netif);
+    }
 }
 
 void hal_net_init(const struct hal_net_config *c)
@@ -247,9 +251,13 @@ void hal_net_poll(void)
     if ((uint32_t)(now - last_link_poll_ms) >= 200u) {
         last_link_poll_ms = now;
         bool up = eth_poll_link();
-        if (up != netif_is_link_up(&netif)) {
+        if (up != (netif_is_link_up(&netif) != 0)) {
             if (up) {
                 netif_set_link_up(&netif);
+                if (!ip4_addr_isany_val(*netif_ip4_addr(&netif)) &&
+                    !hal_net_dhcp_bound()) {
+                    etharp_gratuitous(&netif);
+                }
             } else {
                 netif_set_link_down(&netif);
             }

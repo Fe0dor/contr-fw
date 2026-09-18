@@ -8,3 +8,4 @@ __pycache__/
 JLink.log
 .DS_Store
 logs/
+tools/jlink/

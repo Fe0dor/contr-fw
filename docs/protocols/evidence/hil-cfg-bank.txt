@@ -1,0 +1,8 @@
+SYST:PROV:NET dhcp -> OK
+SYST:NET? -> dhcp-fallback,02:88:49:85:68:CC,192.168.0.20,UP
+192.168.0.20 TCP -> G1;dhcp-fallback,02:88:49:85:68:CC,192.168.0.20,UP
+DHCP fallback: PASS
+NET after bank update: G1;dhcp-fallback,02:88:49:85:68:CC,192.168.0.20,UP
+DHCP CFG preserved across bank update: PASS
+SYST:PROV:NET static,192.168.0.20,255.255.255.0,192.168.0.100 -> OK
+192.168.0.20 TCP -> G1;static,02:88:49:85:68:CC,192.168.0.20,UP

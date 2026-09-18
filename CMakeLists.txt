@@ -5,7 +5,9 @@ cmake_minimum_required(VERSION 3.25)
 #   host   — логика core/ с заглушками hal/host: тесты ctest и процесс contr-host
 #            для прогонщика диалогов (пресет `host`).
 # Версия проекта — версия прошивки (*IDN?, заголовок образа).
-project(contr_fw VERSION 0.2.0 LANGUAGES C ASM)
+project(contr_fw VERSION 0.2.4 LANGUAGES C ASM)
+
+option(CONTR_HIL_HANG_AFTER_INIT "HIL ONLY: hang after boot check to test watchdog rollback" OFF)
 
 option(CONTR_BRINGUP "Наладочная сборка с командами DBG:* (план 22, шаг 1)" OFF)
 
@@ -87,14 +89,20 @@ if(CONTR_TARGET)
     )
     target_include_directories(contr_hal PUBLIC hal hal/target hal/target/net)
     target_include_directories(contr_hal SYSTEM PUBLIC ${CMSIS_CORE} ${CMSIS_F7}/Include)
-    target_compile_definitions(contr_hal PUBLIC STM32F767xx)
+    # ROM dual-boot leaves VTOR pointing at system memory. Relocate before IRQs.
+    target_compile_definitions(contr_hal PUBLIC STM32F767xx USER_VECT_TAB_ADDRESS)
     set_source_files_properties(${CMSIS_F7}/Source/Templates/system_stm32f7xx.c PROPERTIES COMPILE_OPTIONS "-w")
     target_link_libraries(contr_hal PUBLIC lwip)
 
     contr_core_library(contr_core contr_hal)
     target_link_libraries(contr_hal PUBLIC contr_core) # колбэки core_net_* из core
 
-    add_executable(contr-fw app/main.c)
+    if(CONTR_HIL_HANG_AFTER_INIT)
+        message(WARNING "HIL fault image: intentionally hangs after core_init; never deploy as production")
+        add_executable(contr-fw tests/hil/hang_main.c)
+    else()
+        add_executable(contr-fw app/main.c)
+    endif()
     set_target_properties(contr-fw PROPERTIES SUFFIX ".elf")
     target_link_libraries(contr-fw PRIVATE contr_core contr_hal lwip)
     target_link_options(contr-fw PRIVATE

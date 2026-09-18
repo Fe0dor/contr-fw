@@ -36,7 +36,7 @@ _utf8_console()
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_IMAGE = ROOT / "build" / "target" / "contr-fw.hex"
 DEVICE = "STM32F767ZI"
-SPEED_KHZ = 4000
+SPEED_KHZ = 1000
 
 CANDIDATES = (
     "JLink.exe",
@@ -69,8 +69,11 @@ def find_jlink(explicit: str | None) -> str:
     )
 
 
-def build_script(image: Path | None) -> str:
-    lines = ["r", "h"]
+def build_script(image: Path | None, loader_dir: Path | None = None) -> str:
+    lines = []
+    if loader_dir is not None:
+        lines.append(f"exec JLinkDevicesXMLPath = {loader_dir.resolve().as_posix()}/")
+    lines += ["R0", "Sleep 100", "connect", "R1", "h", "w4 0xE0042008 0x00001000"]
     if image is not None:
         lines.append(f"loadfile {image.as_posix()}")
     lines += ["r", "g", "q", ""]
@@ -86,7 +89,7 @@ def run(jlink: str, script: str) -> int:
         "-Device", DEVICE,
         "-If", "SWD",
         "-Speed", str(SPEED_KHZ),
-        "-AutoConnect", "1",
+        "-AutoConnect", "0",
         "-NoGui", "1",
         "-ExitOnError", "1",
         "-CommandFile", script_path,
@@ -103,9 +106,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("image", nargs="?", type=Path, default=DEFAULT_IMAGE, help="hex/bin/elf для загрузки")
     parser.add_argument("--jlink", help="путь к JLink.exe / JLinkExe")
     parser.add_argument("--reset-only", action="store_true", help="не загружать, только сброс и запуск")
+    parser.add_argument("--dual-loader-dir", type=Path, default=ROOT / 'tools' / 'jlink', help="каталог официального dual-bank загрузчика SEGGER")
+    parser.add_argument("--single-bank", action="store_true", help="только для платы с nDBANK=1; стандартный загрузчик J-Link")
     args = parser.parse_args(argv)
 
     image: Path | None = None if args.reset_only else args.image
+    loader_dir = None if image is None or args.single_bank else args.dual_loader_dir
+    if loader_dir is not None and not (loader_dir / 'JLinkDevices.xml').is_file():
+        print('Dual-bank loader missing. Run: python tools/setup_dual_loader.py', file=sys.stderr)
+        return 2
     if image is not None and not image.exists():
         print(f"образ не найден: {image} — сначала cmake --workflow --preset target", file=sys.stderr)
         return 2
@@ -114,7 +123,7 @@ def main(argv: list[str] | None = None) -> int:
     except FileNotFoundError as exc:
         print(exc, file=sys.stderr)
         return 2
-    code = run(jlink, build_script(image))
+    code = run(jlink, build_script(image.resolve() if image else None, loader_dir))
     if code != 0:
         print(f"J-Link завершился с кодом {code}", file=sys.stderr)
     return code

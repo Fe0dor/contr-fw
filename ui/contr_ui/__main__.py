@@ -1,5 +1,5 @@
 import sys
 
-from contr_ui.app import main
+from contr_ui.web import main
 
 sys.exit(main())

@@ -99,6 +99,9 @@ static int program(uint32_t addr, const uint8_t *data, size_t len)
         uint32_t word = (uint32_t)data[i] | ((uint32_t)data[i + 1] << 8) | ((uint32_t)data[i + 2] << 16)
                         | ((uint32_t)data[i + 3] << 24);
         *(volatile uint32_t *)(addr + i) = word;
+        /* Cortex-M7 buffers AXI writes. Complete the store before checking BSY
+         * or clearing PG (same ordering as ST HAL FLASH_Program_Word). */
+        __DSB();
         rc = wait_done();
         if (rc == 0 && *(volatile uint32_t *)(addr + i) != word) {
             rc = -1;
