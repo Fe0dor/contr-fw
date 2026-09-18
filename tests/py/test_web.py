@@ -173,6 +173,14 @@ def test_http_origin_token_validation_and_assets(bridge):
         with urlopen(url) as response:
             assert b'CONTR' in response.read()
             assert "frame-ancestors 'none'" in response.headers['Content-Security-Policy']
+        with urlopen(url + '/api/commands') as response:
+            catalog = json.load(response)
+            assert len(catalog) == 27
+            assert sum(item['bringup'] for item in catalog) == 10
+            assert any(item['name'] == 'SAFE' for item in catalog)
+        with urlopen(url + '/commands.js') as response:
+            assert response.headers['Content-Type'].startswith('text/javascript')
+            assert b'executeCommandRow' in response.read()
         with urlopen(url + '/api/bootstrap') as response:
             token = json.load(response)['token']
         for headers in ({'Content-Type': 'application/json'},

@@ -16,6 +16,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
 from .bridge import Bridge, DeviceError
+from .command_catalog import COMMAND_CATALOG
 from .links import serial_ports
 
 ASSETS = Path(__file__).with_name("static")
@@ -75,9 +76,12 @@ class Handler(BaseHTTPRequestHandler):
             return self._reply(200, bridge.snapshot(since))
         if path == "/api/log":
             return self._reply(200, bridge.log_path.read_bytes(), "application/x-ndjson; charset=utf-8", True)
+        if path == "/api/commands":
+            return self._reply(200, list(COMMAND_CATALOG))
         if path == "/api/ports":
             return self._reply(200, serial_ports())
         assets = {"/": ("index.html", "text/html"), "/terminal": ("index.html", "text/html"),
+                  "/commands.js": ("commands.js", "text/javascript"),
                   "/app.js": ("app.js", "text/javascript"), "/style.css": ("style.css", "text/css")}
         if path not in assets:
             return self._reply(404, {"error": "Страница не найдена"})

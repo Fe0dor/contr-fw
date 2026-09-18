@@ -48,7 +48,9 @@ jobs:
           node-version: "24"
 
       - name: Синтаксис браузерного интерфейса
-        run: node --check ui/contr_ui/static/app.js
+        run: |
+          node --check ui/contr_ui/static/app.js
+          node --check ui/contr_ui/static/commands.js
 
       - name: Упаковка интерфейса со статическими ресурсами
         run: python -m pip wheel ./ui --no-deps --wheel-dir build/wheels
