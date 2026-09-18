@@ -196,6 +196,8 @@ class Bridge:
                 return
             if command == "SAFE":
                 self.state["safe_acknowledged"] = body == "OK"
+                if body == "OK":
+                    self.state["replies"]["ROUT:STAT?"] = ""
             elif not command.split(" ", 1)[0].endswith("?"):
                 self.state["safe_acknowledged"] = False
             if command.endswith("?"):
@@ -285,7 +287,7 @@ class Bridge:
         return reply
 
     def _refresh(self):
-        for cmd in ("*IDN?", "SYST:NET?", "SYST:SAFE?", "TEST:ALL?", "SYST:CONF?", "INTERLOCK:LIST?", "SYST:UPD:STAT?"):
+        for cmd in ("*IDN?", "SYST:NET?", "SYST:SAFE?", "TEST:ALL?", "SYST:CONF?", "INTERLOCK:LIST?", "SYST:UPD:STAT?", "ROUT:STAT?"):
             if self.urgent.is_set():
                 self.urgent.clear()
                 self._exchange("SAFE")
@@ -416,7 +418,7 @@ class Bridge:
                 operation, args, future, epoch = self.tasks.get(timeout=.05)
             except queue.Empty:
                 if self.link and time.monotonic() >= self.next_poll:
-                    commands = ("SYST:ERR?", "SYST:LOG?", "SYST:SAFE?", "SYST:NET?")
+                    commands = ("ROUT:STAT?", "SYST:ERR?", "ROUT:STAT?", "SYST:LOG?", "ROUT:STAT?", "SYST:SAFE?", "ROUT:STAT?", "SYST:NET?")
                     cmd = commands[self.poll_index % len(commands)]
                     self.poll_index += 1
                     self.next_poll = time.monotonic() + self.poll_ms / 1000

@@ -65,7 +65,7 @@ def test_panels_connect_and_busy_owner(bridge, emulator, tmp_path):
     connect(bridge, emulator)
     s = bridge.snapshot()
     assert s['connected']
-    assert s['replies']['*IDN?'].endswith('0.2.0')
+    assert s['replies']['*IDN?'].endswith('0.3.0')
     assert len(s['relays']) == 81
     assert 'M4' in s['commands']
     assert 'BOARD_REV=1' in s['replies']['SYST:CONF?']
@@ -121,7 +121,7 @@ def test_master_rollback_reports_device_evidence(bridge, emulator):
     eventually(lambda: bridge.snapshot()['job']['status'] in {'rolled_back', 'failed'}, timeout=12)
     s = bridge.snapshot()
     assert s['job']['status'] == 'rolled_back', s['job']
-    assert s['replies']['*IDN?'].endswith('0.2.0')
+    assert s['replies']['*IDN?'].endswith('0.3.0')
 
 
 def test_safe_reply_cannot_be_mistaken_for_next_command(bridge):
@@ -137,7 +137,7 @@ def test_safe_reply_cannot_be_mistaken_for_next_command(bridge):
                 self.lines.put('G1;ERR:ABORTED')
                 self.lines.put('G2;OK')
             else:
-                self.lines.put('G2;TESTDUT,CONTR-R1,X,0.2.0')
+                self.lines.put('G2;TESTDUT,CONTR-R1,X,0.3.0')
         def close(self):
             pass
     wire = FakeLink()
@@ -148,7 +148,7 @@ def test_safe_reply_cannot_be_mistaken_for_next_command(bridge):
     assert wire.started.wait(2)
     bridge.safe()
     assert future.result(3)['reply'] == 'G1;ERR:ABORTED'
-    assert bridge.submit('command', command='*IDN?').result(3)['reply'].endswith('0.2.0')
+    assert bridge.submit('command', command='*IDN?').result(3)['reply'].endswith('0.3.0')
     assert wire.lines.empty()
 
 
@@ -158,7 +158,7 @@ def test_master_does_not_confirm_unexpected_version(bridge, monkeypatch):
     bridge.state['job'] = {'status': 'running'}
     monkeypatch.setattr(bridge, '_require_ok', lambda cmd: sent.append(cmd))
     monkeypatch.setattr(bridge, '_open', lambda target: None)
-    monkeypatch.setattr(bridge, '_exchange', lambda cmd: 'G1;TRIAL,0,0' if cmd == 'SYST:UPD:STAT?' else 'G1;TESTDUT,CONTR-R1,X,0.2.0')
+    monkeypatch.setattr(bridge, '_exchange', lambda cmd: 'G1;TRIAL,0,0' if cmd == 'SYST:UPD:STAT?' else 'G1;TESTDUT,CONTR-R1,X,0.2.5')
     with pytest.raises(DeviceError, match='CONFIRM'):
         bridge._run_update(UpdateImage.read(image()))
     assert 'SYST:UPD:CONFIRM' not in sent
@@ -175,7 +175,7 @@ def test_http_origin_token_validation_and_assets(bridge):
             assert "frame-ancestors 'none'" in response.headers['Content-Security-Policy']
         with urlopen(url + '/api/commands') as response:
             catalog = json.load(response)
-            assert len(catalog) == 27
+            assert len(catalog) == 32
             assert sum(item['bringup'] for item in catalog) == 10
             assert any(item['name'] == 'SAFE' for item in catalog)
         with urlopen(url + '/commands.js') as response:

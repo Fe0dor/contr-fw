@@ -20,6 +20,9 @@ void sr_image_initial(uint8_t image[2][4]);
 /* Порядок старта FW-220 с начальным образом в desired. */
 void sr_start(void);
 
+/* Toggle only the service bit, check both levels, restore its original value. */
+bool sr_test_loop(void);
+
 /* Полная перезапись цепочки из desired.sr_image (FW-122). */
 void sr_write(uint8_t chain);
 

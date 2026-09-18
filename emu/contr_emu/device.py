@@ -1,6 +1,6 @@
-"""Модель устройства CONTR для эмулятора (FW-248…FW-250): протокол шага 2 плана 22.
+"""Модель устройства CONTR для эмулятора (FW-248…FW-250): протокол шагов 2–3 плана 22.
 
-Тот же набор команд, что в прошивке шага 2, те же коды ошибок, префикс поколения по
+Тот же набор команд, что в прошивке шагов 2–3, те же коды ошибок, префикс поколения по
 TCP, арбитраж консоли и клиента, таблица реле и блокировок из gen/relay-numbers.json
 и gen/interlock-table.json (версия и сумма те же, что в файле данных плагина).
 Виртуальное время продвигается директивой ``#advance <мс>`` или advance().
@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 GEN = Path(__file__).resolve().parents[2] / "gen"
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 VENDOR = "TESTDUT"
 MODEL = "CONTR"
 BOARD_REV = 1
@@ -98,6 +98,7 @@ class Device:
         self.bank_versions = {1: VERSION, 2: VERSION}
         self.boot_bank = 1
         self.optbytes_ok = True
+        self.sr_loop_ok = True
         self.reset_cause = "POWER"
         self.log_event("reset: power-on")
 
@@ -167,6 +168,7 @@ class Device:
                 self.push_error("UPD_SEQ", "update rolled back")
                 self.trial_bank = None
         self.generation = 0
+        self.relays_on.clear()
         self.in_safe_state = True
         self.safe = SafeReport(0, "RESET")
 
@@ -194,10 +196,10 @@ class Device:
         return prefix + body
 
     QUERIES = {"*IDN?", "SYST:SAFE?", "SYST:ERR?", "SYST:LOG?", "SYST:CONF?", "SYST:NET?", "SYST:UPD:STAT?",
-               "TEST:ALL?", "INTERLOCK:LIST?"}
+               "TEST:ALL?", "INTERLOCK:LIST?", "ROUT:STAT?"}
     CONSOLE_ONLY = {"SYST:PROV:SERIAL", "SYST:PROV:NET"}
-    SETS = {"SYST:UPD:BEGIN", "SYST:UPD:DATA", "SYST:UPD:COMMIT", "SYST:UPD:ABORT", "SYST:UPD:CONFIRM"}
-    ARGS = {"*IDN?": (0, 0), "SAFE": (0, 0), "SYST:SAFE?": (0, 0), "SYST:ERR?": (0, 0), "SYST:LOG?": (0, 0),
+    SETS = {"ROUT:HIGH", "ROUT:LOW", "ROUT:SET", "ROUT:LOW:ALL", "SYST:UPD:BEGIN", "SYST:UPD:DATA", "SYST:UPD:COMMIT", "SYST:UPD:ABORT", "SYST:UPD:CONFIRM"}
+    ARGS = {"ROUT:HIGH": (1, 81), "ROUT:LOW": (1, 81), "ROUT:SET": (0, 81), "ROUT:LOW:ALL": (0, 0), "ROUT:STAT?": (0, 0), "*IDN?": (0, 0), "SAFE": (0, 0), "SYST:SAFE?": (0, 0), "SYST:ERR?": (0, 0), "SYST:LOG?": (0, 0),
             "SYST:CONF?": (0, 0), "SYST:NET?": (0, 0), "SYST:PROV:SERIAL": (1, 1), "SYST:PROV:NET": (1, 4),
             "SYST:UPD:BEGIN": (3, 3), "SYST:UPD:DATA": (1, 1), "SYST:UPD:COMMIT": (0, 0), "SYST:UPD:ABORT": (0, 0),
             "SYST:UPD:STAT?": (0, 0), "SYST:UPD:CONFIRM": (0, 0), "TEST:ALL?": (0, 0), "INTERLOCK:LIST?": (0, 0)}
@@ -385,8 +387,8 @@ class Device:
         return "OK"
 
     def cmd_test_all_q(self, args: list[str]) -> str:
-        verdict = "FAIL" if not self.optbytes_ok else "WARN"
-        return (f"{verdict};SR0:UNTESTED;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;"
+        verdict = "FAIL" if not self.optbytes_ok or not self.sr_loop_ok else "WARN"
+        return (f"{verdict};SR0:{'OK' if self.sr_loop_ok else 'FAIL'};SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;"
                 f"LOADBOARD:LINK_LOST;INTERLOCK:{self.plugin['checksum']};PROV:{self.serial or 'UNPROVISIONED'};"
                 f"OPTBYTES:{'OK' if self.optbytes_ok else 'MISMATCH'};NET:{self.mode_name()},{self.current_ip()},UP;"
                 f"RESET:{self.reset_cause};SAFE:SILENT")
@@ -396,3 +398,38 @@ class Device:
                    for r in self.numbers["relays"]]
         records.append(f"{self.plugin['table_version']},{self.plugin['checksum']}")
         return ";".join(records)
+
+    def _route(self, args, operation):
+        lookup = {name.upper(): name for name in self.relays}
+        try:
+            names = {lookup[name.upper()] for name in args}
+        except KeyError:
+            raise CommandError("RANGE") from None
+        target = (self.relays_on | names if operation == "high" else
+                  self.relays_on - names if operation == "low" else names)
+        numbers = {self.relays[name]["number"] for name in target}
+        for group in self.plugin["groups"]:
+            if set(group["relays"]) <= numbers:
+                pair = sorted(group["relays"])
+                by_number = {r["number"]: r["name"] for r in self.relays.values()}
+                raise CommandError("INTERLOCK", group["name"] + "," + ",".join(by_number[n] for n in pair))
+        if target - self.relays_on:
+            self.relays_on &= target
+            self.advance(21)
+        self.relays_on = target
+        return "OK"
+
+    def cmd_rout_high(self, args):
+        return self._route(args, "high")
+
+    def cmd_rout_low(self, args):
+        return self._route(args, "low")
+
+    def cmd_rout_set(self, args):
+        return self._route(args, "set")
+
+    def cmd_rout_low_all(self, args):
+        return self._route([], "set")
+
+    def cmd_rout_stat_q(self, args):
+        return ",".join(name for name in self.relays if name in self.relays_on)

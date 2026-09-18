@@ -5,6 +5,7 @@
 #include "config.h"
 #include "hal.h"
 #include "state.h"
+#include "signals.h"
 
 void sr_image_initial(uint8_t image[2][4])
 {
@@ -45,4 +46,19 @@ void sr_image_set(uint8_t chain, uint8_t reg, uint8_t bit, bool value)
 bool sr_image_get(uint8_t chain, uint8_t reg, uint8_t bit)
 {
     return (desired.sr_image[chain][reg] >> bit) & 1u;
+}
+
+bool sr_test_loop(void)
+{
+    bool saved = sr_image_get(0, SR0_TEST_OUT_REG, SR0_TEST_OUT_BIT);
+    bool ok = true;
+    for (unsigned level = 0; level < 2; ++level) {
+        sr_image_set(0, SR0_TEST_OUT_REG, SR0_TEST_OUT_BIT, level != 0);
+        sr_write(0);
+        hal_delay_us(10);
+        if (signal_read(SIG_SR_TEST_IN) != (level != 0)) ok = false;
+    }
+    sr_image_set(0, SR0_TEST_OUT_REG, SR0_TEST_OUT_BIT, saved);
+    sr_write(0);
+    return ok;
 }

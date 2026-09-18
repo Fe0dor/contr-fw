@@ -26,6 +26,7 @@ static struct {
     bool button;
     unsigned wdt_kicks;
     unsigned flash_ops;
+    bool sr_loop_broken;
 } h;
 
 static void journal(const char *fmt, ...)
@@ -138,7 +139,13 @@ void hal_gpio_write(uint8_t port, uint8_t pin, bool level)
     journal("gpio_write P%c%u %d", 'A' + port, pin, level ? 1 : 0);
 }
 
-bool hal_gpio_read(uint8_t port, uint8_t pin) { return host_pin(port, pin)->level; }
+void host_sr_loop_broken(bool broken) { h.sr_loop_broken = broken; }
+bool hal_gpio_read(uint8_t port, uint8_t pin)
+{
+    if (port == 1 && pin == 7 && !h.sr_loop_broken)
+        return h.sr_oe[0] && ((h.sr_out[0][2] >> 4) & 1u);
+    return host_pin(port, pin)->level;
+}
 void hal_jtag_release_pb4(void) { journal("jtag_release"); hal_gpio_config(1, 4, HAL_PIN_IN, HAL_PULL_DOWN, false); }
 bool hal_button_pressed(void) { return h.button; }
 void host_set_button(bool pressed) { h.button = pressed; }

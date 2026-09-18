@@ -82,6 +82,7 @@ class Handler(BaseHTTPRequestHandler):
             return self._reply(200, serial_ports())
         assets = {"/": ("index.html", "text/html"), "/terminal": ("index.html", "text/html"),
                   "/commands.js": ("commands.js", "text/javascript"),
+                  "/relays.js": ("relays.js", "text/javascript"),
                   "/app.js": ("app.js", "text/javascript"), "/style.css": ("style.css", "text/css")}
         if path not in assets:
             return self._reply(404, {"error": "Страница не найдена"})

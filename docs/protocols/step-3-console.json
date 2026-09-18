@@ -1,0 +1,34 @@
+[
+  {
+    "command": "ROUT:SET M4",
+    "reply": "OK"
+  },
+  {
+    "command": "ROUT:HIGH M5",
+    "reply": "ERR:INTERLOCK,M__M4__M5,M4,M5"
+  },
+  {
+    "command": "ROUT:STAT?",
+    "reply": "M4"
+  },
+  {
+    "command": "ROUT:SET M5",
+    "reply": "OK"
+  },
+  {
+    "command": "ROUT:STAT?",
+    "reply": "M5"
+  },
+  {
+    "command": "ROUT:STAT?",
+    "reply": ""
+  },
+  {
+    "command": "ROUT:HIGH M4",
+    "reply": "ERR:BUSY"
+  },
+  {
+    "command": "SAFE",
+    "reply": "OK"
+  }
+]

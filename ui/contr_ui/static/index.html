@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CONTR · Пульт стенда</title><link rel="stylesheet" href="/style.css"><script defer src="/app.js"></script><script defer src="/commands.js"></script></head>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CONTR · Пульт стенда</title><link rel="stylesheet" href="/style.css"><script defer src="/app.js"></script><script defer src="/commands.js"></script><script defer src="/relays.js"></script></head>
 <body>
 <aside class="sidebar">
   <a class="brand" href="/"><span class="brand-mark">C<span></span></span><span>CONTR<small>ПУЛЬТ СТЕНДА</small></span></a>
@@ -9,6 +9,7 @@
     <button class="nav" data-page="connection"><span>⇄</span>Подключение и сеть</button>
     <button class="nav" data-page="diagnostics"><span>⌁</span>Диагностика</button>
     <button class="nav" data-page="configuration"><span>☷</span>Конфигурация</button>
+    <button class="nav" data-page="relays"><span>▦</span>Реле</button>
     <button class="nav" data-page="commands"><span>⌘</span>Команды</button>
     <button class="nav" data-page="scripts"><span>▷</span>Сценарии</button>
     <button class="nav" data-page="update"><span>↥</span>Обновление</button>
@@ -16,7 +17,7 @@
     <button class="nav" data-page="terminal"><span>›_</span>Терминал</button>
     <button class="nav" data-page="journal"><span>≡</span>Журнал событий</button>
   </nav>
-  <div class="sidebar-bottom"><span class="dot" id="side-dot"></span><span id="side-status">Нет подключения</span><small>Протокол 0.2 · шаг 2</small></div>
+  <div class="sidebar-bottom"><span class="dot" id="side-dot"></span><span id="side-status">Нет подключения</span><small>Протокол 0.3 · шаг 3</small></div>
 </aside>
 <div class="workspace">
   <header class="topbar"><div class="breadcrumbs">Стенд <span>/</span> <strong id="breadcrumb">Обзор устройства</strong></div><div class="top-actions"><span class="pill" id="channel-pill">Не подключено</span><button class="safe-button" id="safe" disabled><span>■</span> SAFE</button></div></header>
@@ -56,7 +57,16 @@
 
     <section class="page" id="page-diagnostics" hidden><div class="page-title"><div><div class="eyebrow">ПРОВЕРКА ГОТОВНОСТИ</div><h1>Диагностика</h1><p>Разбор отчёта TEST:ALL? по отдельным узлам.</p></div><button class="button primary" data-send="TEST:ALL?">Запустить самопроверку</button></div><div class="diagnostic-grid" id="diagnostic-grid"></div><article class="card wide-card"><div class="card-heading"><div><h3>Последний вход в SAFE</h3><p>Отчёт устройства; не заменяет измерения физических выходов</p></div><button class="button" data-send="SYST:SAFE?">Прочитать отчёт</button></div><div id="safe-report"></div></article></section>
 
-    <section class="page" id="page-configuration" hidden><div class="page-title"><div><div class="eyebrow">ДАННЫЕ УСТРОЙСТВА</div><h1>Конфигурация</h1><p>Константы прошивки и карта реле из единого источника.</p></div><button class="button" data-send="SYST:CONF?">Обновить конфигурацию</button></div><article class="card"><div class="card-heading"><h3>Константы сборки</h3><input class="search" id="config-search" placeholder="Найти параметр…" aria-label="Поиск параметра"></div><div class="table-scroll"><table><thead><tr><th>Параметр</th><th>Значение</th></tr></thead><tbody id="config-table"></tbody></table></div></article><article class="card wide-card"><div class="card-heading"><div><h3>Карта реле</h3><p>Справочник INTERLOCK:LIST?. Переключение реле появится на шаге 3.</p></div><button class="button" data-send="INTERLOCK:LIST?">Прочитать таблицу</button></div><div class="relay-grid" id="relay-grid"></div></article></section>
+    <section class="page" id="page-configuration" hidden><div class="page-title"><div><div class="eyebrow">ДАННЫЕ УСТРОЙСТВА</div><h1>Конфигурация</h1><p>Константы прошивки и карта реле из единого источника.</p></div><button class="button" data-send="SYST:CONF?">Обновить конфигурацию</button></div><article class="card"><div class="card-heading"><h3>Константы сборки</h3><input class="search" id="config-search" placeholder="Найти параметр…" aria-label="Поиск параметра"></div><div class="table-scroll"><table><thead><tr><th>Параметр</th><th>Значение</th></tr></thead><tbody id="config-table"></tbody></table></div></article><article class="card wide-card"><div class="card-heading"><div><h3>Карта реле</h3><p>Справочник INTERLOCK:LIST?. Переключение — на странице «Реле».</p></div><button class="button" data-send="INTERLOCK:LIST?">Прочитать таблицу</button></div><div class="relay-grid" id="relay-grid"></div></article></section>
+
+    <section class="page" id="page-relays" hidden>
+      <div class="page-title"><div><div class="eyebrow">КОММУТАЦИЯ</div><h1>Реле</h1><p>Нажмите реле для включения или выключения. Зелёный — включено по образу прошивки.</p></div><button class="button" id="relays-refresh">Обновить состояние</button></div>
+      <article class="card"><div class="field-row"><label>Поиск<input type="search" id="relays-search" placeholder="Имя, блок или адрес"></label><label>Группа блокировки<select id="relays-group"><option value="">Все группы</option></select></label></div>
+        <form id="relays-set-form" class="inline-form"><label>Точный список включённых реле<input id="relays-target" placeholder="Например M4,V1.1" autocomplete="off" list="relays-names"><datalist id="relays-names"></datalist></label><button class="button primary" id="relays-apply">Применить список</button><button type="button" class="button" id="relays-off">Выключить все реле</button></form>
+        <p class="form-note">Применение списка выключает все неуказанные реле. Пустой список выключает все. Блокировки проверяет контроллер.</p>
+        <p id="relays-status" aria-live="polite">Ожидание данных</p><pre id="relays-result" class="command-response" aria-live="polite">Команда ещё не выполнялась</pre>
+      </article><div id="relays-blocks" class="relay-blocks"></div>
+    </section>
 
     <section class="page" id="page-commands" hidden>
       <div class="page-title"><div><div class="eyebrow">СПРАВОЧНИК И ВЫПОЛНЕНИЕ</div><h1>Команды</h1><p>Реализованные команды протокола. Аргументы разделяются запятыми.</p></div><span class="pill neutral" id="commands-count">Загрузка…</span></div>

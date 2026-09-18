@@ -1,0 +1,2025 @@
+{
+  "started": "2026-09-18 17:14:05",
+  "transport": "existing UI bridge TCP",
+  "external_circuits": "disconnected, user confirmed",
+  "physical_contacts": "not measured",
+  "records": [
+    {
+      "command": "*IDN?",
+      "reply": "G8;TESTDUT,CONTR-R1,UNPROVISIONED,0.3.0"
+    },
+    {
+      "command": "SYST:UPD:STAT?",
+      "reply": "G8;CONFIRMED,0,0"
+    },
+    {
+      "command": "SAFE",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "rout:high m4,v1.1,m4",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V1.1,M4"
+    },
+    {
+      "command": "ROUT:HIGH M5,L1",
+      "reply": "G9;ERR:INTERLOCK,M__M4__M5,M4,M5"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V1.1,M4"
+    },
+    {
+      "command": "ROUT:SET M99",
+      "reply": "G9;ERR:RANGE"
+    },
+    {
+      "command": "ROUT:SET M5,",
+      "reply": "G9;ERR:RANGE"
+    },
+    {
+      "command": "ROUT:SET M5",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M5"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:SET V1.1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V1.1"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V1.1"
+    },
+    {
+      "command": "ROUT:LOW V1.1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V1.2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V1.2"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V1.2"
+    },
+    {
+      "command": "ROUT:LOW V1.2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V1.3",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V1.3"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V1.3"
+    },
+    {
+      "command": "ROUT:LOW V1.3",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V1.4",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V1.4"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V1.4"
+    },
+    {
+      "command": "ROUT:LOW V1.4",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V1.5",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V1.5"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V1.5"
+    },
+    {
+      "command": "ROUT:LOW V1.5",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V1.6",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V1.6"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V1.6"
+    },
+    {
+      "command": "ROUT:LOW V1.6",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V1.7",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V1.7"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V1.7"
+    },
+    {
+      "command": "ROUT:LOW V1.7",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V1.8",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V1.8"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V1.8"
+    },
+    {
+      "command": "ROUT:LOW V1.8",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V2.1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V2.1"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V2.1"
+    },
+    {
+      "command": "ROUT:LOW V2.1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V2.2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V2.2"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V2.2"
+    },
+    {
+      "command": "ROUT:LOW V2.2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V2.3",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V2.3"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V2.3"
+    },
+    {
+      "command": "ROUT:LOW V2.3",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V2.4",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V2.4"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V2.4"
+    },
+    {
+      "command": "ROUT:LOW V2.4",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V2.5",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V2.5"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V2.5"
+    },
+    {
+      "command": "ROUT:LOW V2.5",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V2.6",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V2.6"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V2.6"
+    },
+    {
+      "command": "ROUT:LOW V2.6",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V2.7",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V2.7"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V2.7"
+    },
+    {
+      "command": "ROUT:LOW V2.7",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V3.1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V3.1"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V3.1"
+    },
+    {
+      "command": "ROUT:LOW V3.1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V3.2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V3.2"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V3.2"
+    },
+    {
+      "command": "ROUT:LOW V3.2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V3.3",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V3.3"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V3.3"
+    },
+    {
+      "command": "ROUT:LOW V3.3",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V3.4",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V3.4"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V3.4"
+    },
+    {
+      "command": "ROUT:LOW V3.4",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V3.5",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V3.5"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V3.5"
+    },
+    {
+      "command": "ROUT:LOW V3.5",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V3.6",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V3.6"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V3.6"
+    },
+    {
+      "command": "ROUT:LOW V3.6",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V3.7",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V3.7"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V3.7"
+    },
+    {
+      "command": "ROUT:LOW V3.7",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V3.8",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V3.8"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V3.8"
+    },
+    {
+      "command": "ROUT:LOW V3.8",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V3.9",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V3.9"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V3.9"
+    },
+    {
+      "command": "ROUT:LOW V3.9",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V3.10",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V3.10"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V3.10"
+    },
+    {
+      "command": "ROUT:LOW V3.10",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V4.1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V4.1"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V4.1"
+    },
+    {
+      "command": "ROUT:LOW V4.1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V4.2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V4.2"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V4.2"
+    },
+    {
+      "command": "ROUT:LOW V4.2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V4.3",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V4.3"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V4.3"
+    },
+    {
+      "command": "ROUT:LOW V4.3",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET V4.4",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V4.4"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;V4.4"
+    },
+    {
+      "command": "ROUT:LOW V4.4",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET M1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M1"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M1"
+    },
+    {
+      "command": "ROUT:LOW M1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET M2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M2"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M2"
+    },
+    {
+      "command": "ROUT:LOW M2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET M3",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M3"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M3"
+    },
+    {
+      "command": "ROUT:LOW M3",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET M4",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M4"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M4"
+    },
+    {
+      "command": "ROUT:LOW M4",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET M5",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M5"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M5"
+    },
+    {
+      "command": "ROUT:LOW M5",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET M6",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M6"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M6"
+    },
+    {
+      "command": "ROUT:LOW M6",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET M7",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M7"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M7"
+    },
+    {
+      "command": "ROUT:LOW M7",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET M8",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M8"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M8"
+    },
+    {
+      "command": "ROUT:LOW M8",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET M9",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M9"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M9"
+    },
+    {
+      "command": "ROUT:LOW M9",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET M10",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M10"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M10"
+    },
+    {
+      "command": "ROUT:LOW M10",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET M11",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M11"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M11"
+    },
+    {
+      "command": "ROUT:LOW M11",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET M12",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M12"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M12"
+    },
+    {
+      "command": "ROUT:LOW M12",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET M13",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M13"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M13"
+    },
+    {
+      "command": "ROUT:LOW M13",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET M14",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M14"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M14"
+    },
+    {
+      "command": "ROUT:LOW M14",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET M15",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M15"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M15"
+    },
+    {
+      "command": "ROUT:LOW M15",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET M16",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M16"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M16"
+    },
+    {
+      "command": "ROUT:LOW M16",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET M17",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M17"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M17"
+    },
+    {
+      "command": "ROUT:LOW M17",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET M18",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M18"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M18"
+    },
+    {
+      "command": "ROUT:LOW M18",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET M19",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M19"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;M19"
+    },
+    {
+      "command": "ROUT:LOW M19",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET A1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;A1"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;A1"
+    },
+    {
+      "command": "ROUT:LOW A1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET A2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;A2"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;A2"
+    },
+    {
+      "command": "ROUT:LOW A2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET A3",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;A3"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;A3"
+    },
+    {
+      "command": "ROUT:LOW A3",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET A4",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;A4"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;A4"
+    },
+    {
+      "command": "ROUT:LOW A4",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET A5",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;A5"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;A5"
+    },
+    {
+      "command": "ROUT:LOW A5",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET CH1.1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;CH1.1"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;CH1.1"
+    },
+    {
+      "command": "ROUT:LOW CH1.1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET CH1.2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;CH1.2"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;CH1.2"
+    },
+    {
+      "command": "ROUT:LOW CH1.2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET CH1.3",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;CH1.3"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;CH1.3"
+    },
+    {
+      "command": "ROUT:LOW CH1.3",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET CH1.4",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;CH1.4"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;CH1.4"
+    },
+    {
+      "command": "ROUT:LOW CH1.4",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET CH1.5",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;CH1.5"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;CH1.5"
+    },
+    {
+      "command": "ROUT:LOW CH1.5",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET CH2.1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;CH2.1"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;CH2.1"
+    },
+    {
+      "command": "ROUT:LOW CH2.1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET D1_G1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;D1_G1"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;D1_G1"
+    },
+    {
+      "command": "ROUT:LOW D1_G1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET D1_G2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;D1_G2"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;D1_G2"
+    },
+    {
+      "command": "ROUT:LOW D1_G2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET D2_G1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;D2_G1"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;D2_G1"
+    },
+    {
+      "command": "ROUT:LOW D2_G1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET D2_G2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;D2_G2"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;D2_G2"
+    },
+    {
+      "command": "ROUT:LOW D2_G2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET D3_G1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;D3_G1"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;D3_G1"
+    },
+    {
+      "command": "ROUT:LOW D3_G1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET D3_G2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;D3_G2"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;D3_G2"
+    },
+    {
+      "command": "ROUT:LOW D3_G2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET D4_G1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;D4_G1"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;D4_G1"
+    },
+    {
+      "command": "ROUT:LOW D4_G1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET D4_G2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;D4_G2"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;D4_G2"
+    },
+    {
+      "command": "ROUT:LOW D4_G2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET D5_G1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;D5_G1"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;D5_G1"
+    },
+    {
+      "command": "ROUT:LOW D5_G1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET D5_G2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;D5_G2"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;D5_G2"
+    },
+    {
+      "command": "ROUT:LOW D5_G2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET D6_G1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;D6_G1"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;D6_G1"
+    },
+    {
+      "command": "ROUT:LOW D6_G1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET D6_G2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;D6_G2"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;D6_G2"
+    },
+    {
+      "command": "ROUT:LOW D6_G2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET PM1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;PM1"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;PM1"
+    },
+    {
+      "command": "ROUT:LOW PM1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET PM2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;PM2"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;PM2"
+    },
+    {
+      "command": "ROUT:LOW PM2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET PM3",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;PM3"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;PM3"
+    },
+    {
+      "command": "ROUT:LOW PM3",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET RAtoDUT",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;RAtoDUT"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;RAtoDUT"
+    },
+    {
+      "command": "ROUT:LOW RAtoDUT",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET RBtoDUT",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;RBtoDUT"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;RBtoDUT"
+    },
+    {
+      "command": "ROUT:LOW RBtoDUT",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET L1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;L1"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;L1"
+    },
+    {
+      "command": "ROUT:LOW L1",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET L2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;L2"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;L2"
+    },
+    {
+      "command": "ROUT:LOW L2",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET L3",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;L3"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;L3"
+    },
+    {
+      "command": "ROUT:LOW L3",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET L4",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;L4"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;L4"
+    },
+    {
+      "command": "ROUT:LOW L4",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "ROUT:SET L5",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;L5"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;L5"
+    },
+    {
+      "command": "ROUT:LOW L5",
+      "reply": "G9;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G9;"
+    },
+    {
+      "command": "SAFE",
+      "reply": "G10;OK"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G10;"
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G10;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+    }
+  ],
+  "image_sha256": "a379cdf9bf6c6fffb4faab53f13936f0efb14a6310b842555343a66c346acfed",
+  "sr_loop_wire": "not installed, user confirmed",
+  "dialog_checks": 11,
+  "dialog_error": "step3-relays.txt:23: ожидалось 'G9;WARN;SR0:OK;SR1:UNVERIFIED;.*', получено 'G9;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT'",
+  "relay_names_checked": 81,
+  "result": "RELAY_COMMANDS_PASS; SR0_FAIL",
+  "final_safe": "G10;OK",
+  "final_relays": "",
+  "final_diagnostic": "FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT"
+}

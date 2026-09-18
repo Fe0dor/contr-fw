@@ -21,7 +21,7 @@ def test_emulator_contract_nonblocking_read() -> None:
         emu.read(timeout_s=0)
     emu.write(b"*IDN?\n")
     reply = emu.read(timeout_s=0)
-    assert reply.startswith(b"G1;TESTDUT,CONTR-R1,UNPROVISIONED,0.2.0\n")
+    assert reply.startswith(b"G1;TESTDUT,CONTR-R1,UNPROVISIONED,0.3.0\n")
     with pytest.raises(TimeoutError):
         emu.read(0)
 

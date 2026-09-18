@@ -1,0 +1,47 @@
+# Step 3: same corpus for C, emulator and board (disconnect external circuits first).
+> SAFE
+<~ G{G};OK
+> ROUT:STAT?
+< G{G};
+> rout:high m4,v1.1,m4
+< G{G};OK
+> ROUT:STAT?
+< G{G};V1.1,M4
+> ROUT:HIGH M5,L1
+< G{G};ERR:INTERLOCK,M__M4__M5,M4,M5
+> ROUT:STAT?
+< G{G};V1.1,M4
+> ROUT:SET M99
+< G{G};ERR:RANGE
+> ROUT:SET M5,
+< G{G};ERR:RANGE
+> ROUT:SET M5
+< G{G};OK
+> ROUT:STAT?
+< G{G};M5
+> TEST:ALL?
+<~ G{G};WARN;SR0:OK;SR1:UNVERIFIED;.*
+> ROUT:STAT?
+< G{G};M5
+> ROUT:LOW M5
+< G{G};OK
+> ROUT:SET L1,L2,L3,L4,L5,PM1,PM2,PM3,CH2.1
+< G{G};OK
+> ROUT:STAT?
+< G{G};CH2.1,PM1,PM2,PM3,L1,L2,L3,L4,L5
+> ROUT:LOW:ALL
+< G{G};OK
+> ROUT:STAT?
+< G{G};
+> ROUT:SET RAtoDUT,M4
+< G{G};ERR:INTERLOCK,RA__M4__RAtoDUT,M4,RAtoDUT
+> ROUT:SET RBtoDUT,M6
+< G{G};ERR:INTERLOCK,RB__M6__RBtoDUT,M6,RBtoDUT
+> ROUT:SET PM1
+< G{G};OK
+> ROUT:SET
+< G{G};OK
+> ROUT:STAT?
+< G{G};
+> SAFE
+< G{G+1};OK

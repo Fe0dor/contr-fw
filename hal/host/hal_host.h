@@ -37,6 +37,7 @@ void host_gpio_set_input(uint8_t port, uint8_t pin, bool level);
 /* ---- цепочки SR: последнее защёлкнутое содержимое выходов ---- */
 const uint8_t *host_sr_outputs(uint8_t chain);
 bool host_sr_oe_active(uint8_t chain);
+void host_sr_loop_broken(bool broken);
 
 /* ---- I²C: обработчик модели; возвращает код HAL_I2C_* ---- */
 typedef int (*host_i2c_fn)(uint8_t bus, uint8_t addr7, const uint8_t *w, size_t wlen, uint8_t *r, size_t rlen);

@@ -8,6 +8,7 @@ import zlib
 from dataclasses import dataclass
 
 COMMANDS = (
+    "ROUT:HIGH", "ROUT:LOW", "ROUT:SET", "ROUT:LOW:ALL", "ROUT:STAT?",
     "*IDN?", "SAFE", "SYST:SAFE?", "SYST:ERR?", "SYST:LOG?", "SYST:CONF?",
     "SYST:NET?", "SYST:PROV:SERIAL", "SYST:PROV:NET", "SYST:UPD:BEGIN",
     "SYST:UPD:DATA", "SYST:UPD:COMMIT", "SYST:UPD:ABORT", "SYST:UPD:STAT?",

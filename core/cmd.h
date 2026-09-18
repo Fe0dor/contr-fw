@@ -8,8 +8,8 @@
 
 #include "core.h"
 
-#define CMD_MAX_ARGS 8
-#define CMD_LINE_MAX 400 /* SYST:UPD:DATA: 256 байт → 344 символа base64 плюс имя */
+#define CMD_MAX_ARGS 81
+#define CMD_LINE_MAX 512 /* SYST:UPD:DATA: 256 байт → 344 символа base64 плюс имя */
 
 /* Коды ошибок раздела 4; строки — cmd_err_name(). */
 enum err_code {

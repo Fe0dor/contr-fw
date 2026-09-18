@@ -51,6 +51,7 @@ jobs:
         run: |
           node --check ui/contr_ui/static/app.js
           node --check ui/contr_ui/static/commands.js
+          node --check ui/contr_ui/static/relays.js
 
       - name: Упаковка интерфейса со статическими ресурсами
         run: python -m pip wheel ./ui --no-deps --wheel-dir build/wheels
@@ -63,6 +64,9 @@ jobs:
 
       - name: Хост — сборка и ctest
         run: cmake --workflow --preset host
+
+      - name: Все пары блокировок — C и эмулятор
+        run: python tools/check_relay_contract.py --host build/host/contr-host${{ matrix.os == 'windows-latest' && '.exe' || '' }}
 
       - name: Плата — сборка образа
         run: cmake --workflow --preset target

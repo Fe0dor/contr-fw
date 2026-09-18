@@ -13,6 +13,7 @@
 #include "hal.h"
 #include "netcfg.h"
 #include "safe.h"
+#include "relays.h"
 #include "signals.h"
 #include "sr.h"
 #include "state.h"
@@ -293,8 +294,9 @@ static void h_test_all(struct cmdctx *c)
     struct hal_optbytes ob = hal_optbytes_read();
     bool opt_ok = ob.ndbank == (OPT_NDBANK != 0) && ob.ndboot == (OPT_NDBOOT != 0) && ob.iwdg_sw == (OPT_IWDG_SW != 0);
     bool safe_ok = observed.safe.complete;
+    bool sr_ok = sr_test_loop();
     bool warn = true; /* SR1:UNVERIFIED и шаг «подтверждён молчанием» */
-    const char *verdict = (!opt_ok || !safe_ok) ? "FAIL" : warn ? "WARN" : "OK";
+    const char *verdict = (!opt_ok || !safe_ok || !sr_ok) ? "FAIL" : warn ? "WARN" : "OK";
     char serial[CFG_SERIAL_MAX + 1], macs[18], ip[16];
     if (!cfg_get_serial(serial)) {
         strcpy(serial, "UNPROVISIONED");
@@ -310,7 +312,7 @@ static void h_test_all(struct cmdctx *c)
     for (int i = 0; i < SAFE_STEPS; i++) {
         silent = silent || observed.safe.steps[i] == STEP_SILENT;
     }
-    resp_printf(c, "%s;SR0:UNTESTED;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:%d;ALARM:%d;", verdict,
+    resp_printf(c, "%s;SR0:%s;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:%d;ALARM:%d;", verdict, sr_ok ? "OK" : "FAIL",
                 signal_read(SIG_RSP_DC_OK) ? 1 : 0, signal_read(SIG_RSP_ALARM) ? 1 : 0);
     resp_printf(c, "LOADBOARD:LINK_LOST;INTERLOCK:%s;", RELAY_TABLE_CHECKSUM);
     resp_printf(c, "PROV:%s;OPTBYTES:%s;", serial, opt_ok ? "OK" : "MISMATCH");
@@ -370,6 +372,11 @@ static const struct cmd_desc table[] = {
     {"SYST:UPD:CONFIRM", 0, 0, 0, cmd_upd_confirm},
     {"TEST:ALL?", 0, 0, CMDF_QUERY, h_test_all},
     {"INTERLOCK:LIST?", 0, 0, CMDF_QUERY, h_interlock_list},
+    {"ROUT:HIGH", 1, 81, CMDF_SET, cmd_route},
+    {"ROUT:LOW", 1, 81, CMDF_SET, cmd_route},
+    {"ROUT:LOW:ALL", 0, 0, CMDF_SET, cmd_route},
+    {"ROUT:SET", 0, 81, CMDF_SET, cmd_route},
+    {"ROUT:STAT?", 0, 0, CMDF_QUERY, cmd_route_stat},
 #ifdef CONTR_BRINGUP
     {"DBG:PIN", 2, 2, CMDF_SET | CMDF_BRINGUP, dbg_pin},
     {"DBG:PIN?", 1, 1, CMDF_QUERY | CMDF_BRINGUP, dbg_pin_q},

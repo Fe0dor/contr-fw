@@ -44,7 +44,7 @@ async function commandSafeReply(since) {
 async function executeCommandRow(row) {
   if (row.running || commandUnavailable(row.item)) return;
   const args = row.input?.value.trim() || '';
-  if (row.input && !args) { row.input.reportValidity(); row.input.focus(); return; }
+  if (row.input?.required && !args) { row.input.reportValidity(); row.input.focus(); return; }
   const cmd = row.item.name + (args ? ' ' + args : '');
   row.running = true;
   renderCommandAvailability();
@@ -91,7 +91,7 @@ function addCommandRow(item, index) {
     input = node('input');
     input.id = 'command-args-' + index;
     input.placeholder = item.args;
-    input.required = true;
+    input.required = item.name !== 'ROUT:SET';
     input.maxLength = 480 - item.name.length - 1;
     input.autocomplete = 'off';
     input.spellcheck = false;

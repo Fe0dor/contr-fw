@@ -203,7 +203,7 @@ static void test_test_all(void)
 {
     device_boot();
     const char *r = con_cmd("TEST:ALL?");
-    CHECK_PREFIX(r, "WARN;SR0:UNTESTED;SR1:UNVERIFIED;");
+    CHECK_PREFIX(r, "WARN;SR0:OK;SR1:UNVERIFIED;");
     CHECK(strstr(r, "PROV:UNPROVISIONED") != NULL);
     CHECK(strstr(r, "OPTBYTES:OK") != NULL);
     CHECK(strstr(r, "RESET:") != NULL);
