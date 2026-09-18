@@ -18,7 +18,10 @@
 #define CFG_TAIL_OFFSET (HAL_BANK_SIZE - 128u * 1024u)
 
 /* заголовок текущего образа — заполняет компоновщик и mkimage */
-__attribute__((section(".fw_header"), used)) const struct fw_header fw_header = {
+#ifdef CONTR_TARGET
+__attribute__((section(".fw_header"), used))
+#endif
+const struct fw_header fw_header = {
     .magic = {'C', 'O', 'N', 'T', 'R', 'F', 'W', '1'},
     .model = FW_MODEL,
     .revision = BOARD_REV,

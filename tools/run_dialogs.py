@@ -192,6 +192,10 @@ def start_emu(port: int) -> subprocess.Popen:
 
 
 def main(argv: list[str] | None = None) -> int:
+    # CI on Windows may use CP1252 even though reports contain Russian text.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--host", type=Path, help="исполняемый файл contr-host")

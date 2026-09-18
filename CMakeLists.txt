@@ -20,6 +20,7 @@ set(GEN_DIR ${CMAKE_SOURCE_DIR}/gen)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Generic")
     set(CONTR_TARGET ON)
+    add_compile_definitions(CONTR_TARGET=1)
 else()
     set(CONTR_TARGET OFF)
 endif()
