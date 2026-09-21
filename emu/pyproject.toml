@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "contr-emu"
-version = "0.3.0"
+version = "0.4.0"
 description = "Эмулятор устройства стенда CONTR: тот же протокол и таблица блокировок, TCP 5025"
 requires-python = ">=3.12"
 dependencies = []

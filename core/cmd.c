@@ -14,6 +14,7 @@
 #include "netcfg.h"
 #include "safe.h"
 #include "relays.h"
+#include "sections.h"
 #include "signals.h"
 #include "sr.h"
 #include "state.h"
@@ -295,8 +296,9 @@ static void h_test_all(struct cmdctx *c)
     bool opt_ok = ob.ndbank == (OPT_NDBANK != 0) && ob.ndboot == (OPT_NDBOOT != 0) && ob.iwdg_sw == (OPT_IWDG_SW != 0);
     bool safe_ok = observed.safe.complete;
     bool sr_ok = sr_test_loop();
+    bool i2c_a=section_test(0), i2c_b=section_test(1);
     bool warn = true; /* SR1:UNVERIFIED и шаг «подтверждён молчанием» */
-    const char *verdict = (!opt_ok || !safe_ok || !sr_ok) ? "FAIL" : warn ? "WARN" : "OK";
+    const char *verdict = (!opt_ok || !safe_ok || !sr_ok || !i2c_a || !i2c_b) ? "FAIL" : warn ? "WARN" : "OK";
     char serial[CFG_SERIAL_MAX + 1], macs[18], ip[16];
     if (!cfg_get_serial(serial)) {
         strcpy(serial, "UNPROVISIONED");
@@ -312,7 +314,9 @@ static void h_test_all(struct cmdctx *c)
     for (int i = 0; i < SAFE_STEPS; i++) {
         silent = silent || observed.safe.steps[i] == STEP_SILENT;
     }
-    resp_printf(c, "%s;SR0:%s;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:%d;ALARM:%d;", verdict, sr_ok ? "OK" : "FAIL",
+    resp_printf(c, "%s;SR0:%s;SR1:UNVERIFIED;I2C_A:%s;I2C_B:%s;DCOK:%d;ALARM:%d;", verdict, sr_ok ? "OK" : "FAIL",
+                !desired.section_on[0]?"SKIP,OFF":i2c_a?"OK":"FAIL",
+                !desired.section_on[1]?"SKIP,OFF":i2c_b?"OK":"FAIL",
                 signal_read(SIG_RSP_DC_OK) ? 1 : 0, signal_read(SIG_RSP_ALARM) ? 1 : 0);
     resp_printf(c, "LOADBOARD:LINK_LOST;INTERLOCK:%s;", RELAY_TABLE_CHECKSUM);
     resp_printf(c, "PROV:%s;OPTBYTES:%s;", serial, opt_ok ? "OK" : "MISMATCH");
@@ -372,6 +376,9 @@ static const struct cmd_desc table[] = {
     {"SYST:UPD:CONFIRM", 0, 0, 0, cmd_upd_confirm},
     {"TEST:ALL?", 0, 0, CMDF_QUERY, h_test_all},
     {"INTERLOCK:LIST?", 0, 0, CMDF_QUERY, h_interlock_list},
+    {"RES:PWR", 2, 2, CMDF_SET, cmd_res_pwr},
+    {"RES:SET", 3, 3, CMDF_SET, cmd_res_set},
+    {"RES:STAT?", 0, 0, CMDF_QUERY, cmd_res_stat},
     {"ROUT:HIGH", 1, 81, CMDF_SET, cmd_route},
     {"ROUT:LOW", 1, 81, CMDF_SET, cmd_route},
     {"ROUT:LOW:ALL", 0, 0, CMDF_SET, cmd_route},

@@ -58,6 +58,7 @@ void host_reset_all(void)
         h.sr_srclr[c] = false;
         h.sr_oe[c] = false;
     }
+    host_sections_reset();
     host_mem_channels_reset();
 }
 
@@ -127,6 +128,7 @@ void hal_gpio_config(uint8_t port, uint8_t pin, enum hal_pin_mode mode, enum hal
     } else if (pull != HAL_PULL_NONE) {
         p->level = pull == HAL_PULL_UP; /* вход без внешнего источника — по подтяжке */
     }
+    host_sections_gpio(port,pin,mode,level);
     journal("gpio_config P%c%u %s %s %d", 'A' + port, pin, mode_name(mode), pull_name(pull), level ? 1 : 0);
 }
 
@@ -136,6 +138,7 @@ void hal_gpio_write(uint8_t port, uint8_t pin, bool level)
     if (p->mode == HAL_PIN_OUT) {
         p->level = level;
     }
+    host_sections_gpio(port,pin,p->mode,level);
     journal("gpio_write P%c%u %d", 'A' + port, pin, level ? 1 : 0);
 }
 
@@ -210,8 +213,10 @@ void host_i2c_set_handler(host_i2c_fn fn) { h.i2c = fn; }
 
 int hal_i2c_write_read(uint8_t bus, uint8_t addr7, const uint8_t *w, size_t wlen, uint8_t *r, size_t rlen)
 {
-    journal("i2c %u 0x%02X w%u r%u", bus, addr7, (unsigned)wlen, (unsigned)rlen);
-    return h.i2c ? h.i2c(bus, addr7, w, wlen, r, rlen) : HAL_I2C_NACK;
+    char hex[65]="";
+    for(size_t i=0;i<wlen && i<32;i++)snprintf(hex+2*i,3,"%02X",w[i]);
+    journal("i2c %u 0x%02X w%u r%u %s", bus, addr7, (unsigned)wlen, (unsigned)rlen,hex);
+    return h.i2c ? h.i2c(bus, addr7, w, wlen, r, rlen) : host_sections_xfer(bus,addr7,w,wlen,r,rlen);
 }
 
 int hal_i2c_write(uint8_t bus, uint8_t addr7, const uint8_t *data, size_t len)

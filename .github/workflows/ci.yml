@@ -52,6 +52,7 @@ jobs:
           node --check ui/contr_ui/static/app.js
           node --check ui/contr_ui/static/commands.js
           node --check ui/contr_ui/static/relays.js
+          node --check ui/contr_ui/static/sections.js
 
       - name: Упаковка интерфейса со статическими ресурсами
         run: python -m pip wheel ./ui --no-deps --wheel-dir build/wheels

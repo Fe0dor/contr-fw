@@ -13,6 +13,7 @@
 #include "netcfg.h"
 #include "safe.h"
 #include "signals.h"
+#include "sections.h"
 #include "sr.h"
 #include "state.h"
 #include "update.h"
@@ -324,6 +325,8 @@ void core_init(void)
     memset(&observed, 0, sizeof observed);
     errlog_init();
     hal_init();
+    section_off(0);
+    section_off(1);
     hal_wdt_start(WDT_PERIOD_MS);
     observed.reset_cause = hal_reset_cause();
     cfg_init();

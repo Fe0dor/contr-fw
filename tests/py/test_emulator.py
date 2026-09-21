@@ -21,7 +21,7 @@ def test_emulator_contract_nonblocking_read() -> None:
         emu.read(timeout_s=0)
     emu.write(b"*IDN?\n")
     reply = emu.read(timeout_s=0)
-    assert reply.startswith(b"G1;TESTDUT,CONTR-R1,UNPROVISIONED,0.3.0\n")
+    assert reply.startswith(b"G1;TESTDUT,CONTR-R1,UNPROVISIONED,0.4.0\n")
     with pytest.raises(TimeoutError):
         emu.read(0)
 
@@ -60,7 +60,7 @@ def test_update_cycle() -> None:
     img[:8] = (0x20080000).to_bytes(4, "little") + (0x08000225).to_bytes(4, "little")
     img[0x200:0x200 + len(hdr)] = hdr
     crc = zlib.crc32(bytes(img)) & 0xFFFFFFFF
-    assert dev.execute("console", f"SYST:UPD:BEGIN 1024,{crc:08x},0.3.0") == "OK"
+    assert dev.execute("console", f"SYST:UPD:BEGIN 1024,{crc:08x},0.4.0") == "OK"
     import base64
     for off in range(0, 1024, 256):
         block = base64.b64encode(bytes(img[off:off + 256])).decode()

@@ -171,7 +171,7 @@ class Bridge:
         self.previous_log = []
         with self.lock:
             self.state.update(connected=True, channel=link.label, target=self.target, last_error="",
-                              generation=None, replies={}, relays=[], commands=list(COMMANDS), safe_acknowledged=False)
+                              generation=None, replies={}, relays=[], commands=list(COMMANDS), safe_acknowledged=False, section_supported=False)
         self.event("system", "Подключено: " + link.label)
 
     def _close(self, reason):
@@ -198,8 +198,11 @@ class Bridge:
                 self.state["safe_acknowledged"] = body == "OK"
                 if body == "OK":
                     self.state["replies"]["ROUT:STAT?"] = ""
+                    self.state["replies"].pop("RES:STAT?", None)
             elif not command.split(" ", 1)[0].endswith("?"):
                 self.state["safe_acknowledged"] = False
+            if command == "RES:STAT?":
+                self.state["section_supported"] = True
             if command.endswith("?"):
                 self.state["replies"][command] = body
             if command == "INTERLOCK:LIST?":
@@ -287,7 +290,7 @@ class Bridge:
         return reply
 
     def _refresh(self):
-        for cmd in ("*IDN?", "SYST:NET?", "SYST:SAFE?", "TEST:ALL?", "SYST:CONF?", "INTERLOCK:LIST?", "SYST:UPD:STAT?", "ROUT:STAT?"):
+        for cmd in ("*IDN?", "SYST:NET?", "SYST:SAFE?", "TEST:ALL?", "SYST:CONF?", "INTERLOCK:LIST?", "SYST:UPD:STAT?", "ROUT:STAT?", "RES:STAT?"):
             if self.urgent.is_set():
                 self.urgent.clear()
                 self._exchange("SAFE")
@@ -418,11 +421,15 @@ class Bridge:
                 operation, args, future, epoch = self.tasks.get(timeout=.05)
             except queue.Empty:
                 if self.link and time.monotonic() >= self.next_poll:
-                    commands = ("ROUT:STAT?", "SYST:ERR?", "ROUT:STAT?", "SYST:LOG?", "ROUT:STAT?", "SYST:SAFE?", "ROUT:STAT?", "SYST:NET?")
+                    commands = ("SYST:ERR?", "SYST:LOG?", "SYST:SAFE?", "SYST:NET?")
                     cmd = commands[self.poll_index % len(commands)]
                     self.poll_index += 1
                     self.next_poll = time.monotonic() + self.poll_ms / 1000
                     try:
+                        # Both live panels refresh each configured interval (MI-111).
+                        self._exchange("ROUT:STAT?", background=True)
+                        if self.state.get("section_supported"):
+                            self._exchange("RES:STAT?", background=True)
                         self._exchange(cmd, background=True)
                     except Exception as exc:
                         self.event("error", str(exc))

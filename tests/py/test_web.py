@@ -65,7 +65,7 @@ def test_panels_connect_and_busy_owner(bridge, emulator, tmp_path):
     connect(bridge, emulator)
     s = bridge.snapshot()
     assert s['connected']
-    assert s['replies']['*IDN?'].endswith('0.3.0')
+    assert s['replies']['*IDN?'].endswith('0.4.0')
     assert len(s['relays']) == 81
     assert 'M4' in s['commands']
     assert 'BOARD_REV=1' in s['replies']['SYST:CONF?']
@@ -108,7 +108,7 @@ def test_master_upload_confirm_and_version(bridge, emulator):
     eventually(lambda: bridge.snapshot()['job']['status'] in {'done', 'failed'}, timeout=12)
     s = bridge.snapshot()
     assert s['job']['status'] == 'done', s['job']
-    assert s['replies']['*IDN?'].endswith('0.3.0')
+    assert s['replies']['*IDN?'].endswith(UpdateImage.read(image()).version)
     assert s['replies']['SYST:UPD:STAT?'].startswith('CONFIRMED')
 
 
@@ -121,7 +121,7 @@ def test_master_rollback_reports_device_evidence(bridge, emulator):
     eventually(lambda: bridge.snapshot()['job']['status'] in {'rolled_back', 'failed'}, timeout=12)
     s = bridge.snapshot()
     assert s['job']['status'] == 'rolled_back', s['job']
-    assert s['replies']['*IDN?'].endswith('0.3.0')
+    assert s['replies']['*IDN?'].endswith('0.4.0')
 
 
 def test_safe_reply_cannot_be_mistaken_for_next_command(bridge):
@@ -137,7 +137,7 @@ def test_safe_reply_cannot_be_mistaken_for_next_command(bridge):
                 self.lines.put('G1;ERR:ABORTED')
                 self.lines.put('G2;OK')
             else:
-                self.lines.put('G2;TESTDUT,CONTR-R1,X,0.3.0')
+                self.lines.put('G2;TESTDUT,CONTR-R1,X,0.4.0')
         def close(self):
             pass
     wire = FakeLink()
@@ -148,7 +148,7 @@ def test_safe_reply_cannot_be_mistaken_for_next_command(bridge):
     assert wire.started.wait(2)
     bridge.safe()
     assert future.result(3)['reply'] == 'G1;ERR:ABORTED'
-    assert bridge.submit('command', command='*IDN?').result(3)['reply'].endswith('0.3.0')
+    assert bridge.submit('command', command='*IDN?').result(3)['reply'].endswith('0.4.0')
     assert wire.lines.empty()
 
 
@@ -175,7 +175,9 @@ def test_http_origin_token_validation_and_assets(bridge):
             assert "frame-ancestors 'none'" in response.headers['Content-Security-Policy']
         with urlopen(url + '/api/commands') as response:
             catalog = json.load(response)
-            assert len(catalog) == 32
+            assert len(catalog) == 35
+        with urlopen(url + '/sections.js') as response:
+            assert b'buildSections' in response.read()
             assert sum(item['bringup'] for item in catalog) == 10
             assert any(item['name'] == 'SAFE' for item in catalog)
         with urlopen(url + '/commands.js') as response:
@@ -269,3 +271,14 @@ def test_safe_cancels_command_already_dequeued(bridge, monkeypatch):
     assert sent == ['SAFE']
     assert bridge.submit('command', command='NEW_SET').result(3)['reply'] == 'G2;NEW'
     assert sent == ['SAFE', 'NEW_SET']
+
+
+def test_sections_panel_polling_and_safe(bridge, emulator):
+    connect(bridge, emulator)
+    assert 'A:OFF;B:OFF' in bridge.snapshot()['replies']['RES:STAT?']
+    bridge.submit('command', command='RES:PWR A,ON').result(5)
+    bridge.submit('command', command='RES:SET R1,POT,64').result(5)
+    eventually(lambda: 'R1,POT,64' in bridge.snapshot()['replies']['RES:STAT?'])
+    bridge.safe()
+    eventually(lambda: bridge.snapshot()['safe_acknowledged'])
+    eventually(lambda: 'A:OFF;B:OFF' in bridge.snapshot()['replies'].get('RES:STAT?', ''))

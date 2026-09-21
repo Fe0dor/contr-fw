@@ -1,0 +1,111 @@
+{
+  "date": "2026-09-21",
+  "scope": "SAFE/OFF checks only; no section ON or physical measurements",
+  "image_size": 63628,
+  "sha256": "dd113dfa6e927e94fa359c3fde25ad4c73e8d704f1246c05480495c2f7123294",
+  "records": [
+    {
+      "command": "*IDN?",
+      "reply": "G1;TESTDUT,CONTR-R1,UNPROVISIONED,0.4.0",
+      "duration_ms": 62.0
+    },
+    {
+      "command": "RES:PWR A,OFF",
+      "reply": "G1;OK",
+      "duration_ms": 47.0
+    },
+    {
+      "command": "RES:PWR B,OFF",
+      "reply": "G1;OK",
+      "duration_ms": 63.0
+    },
+    {
+      "command": "RES:STAT?",
+      "reply": "G1;A:OFF;B:OFF;R1,POT,?;R1,MTX,?;R2,POT,?;R2,POTH,?;R2,MTX,?;R3,POT,?;R3,MTX,?;R4,POT,?;R4,POTH,?;R4,MTX,?",
+      "duration_ms": 62.0
+    },
+    {
+      "command": "RES:SET R1,POT,128",
+      "reply": "G1;ERR:SECTION_OFF",
+      "duration_ms": 63.0
+    },
+    {
+      "command": "RES:SET R2,POT,128",
+      "reply": "G1;ERR:SECTION_OFF",
+      "duration_ms": 62.0
+    },
+    {
+      "command": "RES:SET R3,POT,128",
+      "reply": "G1;ERR:SECTION_OFF",
+      "duration_ms": 63.0
+    },
+    {
+      "command": "RES:SET R4,POT,128",
+      "reply": "G1;ERR:SECTION_OFF",
+      "duration_ms": 62.0
+    },
+    {
+      "command": "RES:SET R1,POT,257",
+      "reply": "G1;ERR:RANGE,0..256",
+      "duration_ms": 47.0
+    },
+    {
+      "command": "RES:SET R2,POTH,1024",
+      "reply": "G1;ERR:RANGE,0..1023",
+      "duration_ms": 47.0
+    },
+    {
+      "command": "RES:SET R1,POTH,10",
+      "reply": "G1;ERR:RANGE",
+      "duration_ms": 47.0
+    },
+    {
+      "command": "RES:PWR C,ON",
+      "reply": "G1;ERR:RANGE",
+      "duration_ms": 62.0
+    },
+    {
+      "command": "RES:STAT?",
+      "reply": "G1;A:OFF;B:OFF;R1,POT,?;R1,MTX,?;R2,POT,?;R2,POTH,?;R2,MTX,?;R3,POT,?;R3,MTX,?;R4,POT,?;R4,POTH,?;R4,MTX,?",
+      "duration_ms": 63.0
+    },
+    {
+      "command": "SYST:UPD:STAT?",
+      "reply": "G1;CONFIRMED,0,0",
+      "duration_ms": 62.0
+    },
+    {
+      "command": "TEST:ALL?",
+      "reply": "G1;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SILENT",
+      "duration_ms": 63.0
+    },
+    {
+      "command": "SYST:SAFE?",
+      "reply": "G1;1,CONNECT,OK,SILENT,OK,OK,OK,OK,0",
+      "duration_ms": 47.0
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G1;",
+      "duration_ms": 62.0
+    }
+  ],
+  "console": [
+    {
+      "command": "*IDN?",
+      "reply": "TESTDUT,CONTR-R1,UNPROVISIONED,0.4.0"
+    },
+    {
+      "command": "RES:STAT?",
+      "reply": "A:OFF;B:OFF;R1,POT,?;R1,MTX,?;R2,POT,?;R2,POTH,?;R2,MTX,?;R3,POT,?;R3,MTX,?;R4,POT,?;R4,POTH,?;R4,MTX,?"
+    }
+  ],
+  "update": {
+    "kind": "update",
+    "status": "done",
+    "progress": 100,
+    "message": "Обновление подтверждено",
+    "deadline": null
+  },
+  "result": "OFF_STATE_PROTOCOL_PASS; ENERGIZED_AND_MANUAL_TESTS_PENDING"
+}

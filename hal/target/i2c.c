@@ -85,11 +85,16 @@ void hal_i2c_set_timing(uint8_t bus, uint32_t timingr)
     bus_enable(bus);
 }
 
-static int finish(I2C_TypeDef *i)
+#define I2C_WAIT(cond) \
+    ({ bool ok=true; while(!(cond)) { \
+        if((uint32_t)(hal_millis()-started)>=I2C_OP_TIMEOUT_MS){ok=false;break;} \
+    } ok; })
+
+static int finish(I2C_TypeDef *i, uint32_t started)
 {
     /* Ждать именно STOPF: NACKF выставляется раньше, чем STOP ушёл на шину; запись в CR2
      * в этот момент снимает AUTOEND, и контроллер повисает с TC и SCL в нуле. */
-    if (!TARGET_WAIT_UNTIL(i->ISR & (I2C_ISR_STOPF | I2C_ISR_BERR | I2C_ISR_ARLO), I2C_OP_TIMEOUT_MS)) {
+    if (!I2C_WAIT(i->ISR & (I2C_ISR_STOPF | I2C_ISR_BERR | I2C_ISR_ARLO))) {
         i->CR1 &= ~I2C_CR1_PE;
         (void)i->CR1;
         hal_delay_us(2); /* PE в нуле не меньше трёх тактов APB */
@@ -109,8 +114,9 @@ static int finish(I2C_TypeDef *i)
 
 static int xfer(I2C_TypeDef *i, uint8_t addr7, const uint8_t *w, size_t wlen, uint8_t *r, size_t rlen)
 {
+    uint32_t started=hal_millis();
     if (i->ISR & I2C_ISR_BUSY) {
-        if (!TARGET_WAIT_UNTIL(!(i->ISR & I2C_ISR_BUSY), I2C_OP_TIMEOUT_MS)) {
+        if (!I2C_WAIT(!(i->ISR & I2C_ISR_BUSY))) {
             return HAL_I2C_BUS_ERROR;
         }
     }
@@ -118,36 +124,36 @@ static int xfer(I2C_TypeDef *i, uint8_t addr7, const uint8_t *w, size_t wlen, ui
         i->CR2 = ((uint32_t)addr7 << 1) | ((uint32_t)wlen << I2C_CR2_NBYTES_Pos)
                  | (rlen ? 0u : I2C_CR2_AUTOEND) | I2C_CR2_START;
         for (size_t n = 0; n < wlen; n++) {
-            if (!TARGET_WAIT_UNTIL(i->ISR & (I2C_ISR_TXIS | I2C_ISR_NACKF | I2C_ISR_BERR), I2C_OP_TIMEOUT_MS)) {
-                return finish(i);
+            if (!I2C_WAIT(i->ISR & (I2C_ISR_TXIS | I2C_ISR_NACKF | I2C_ISR_BERR))) {
+                return finish(i, started);
             }
             if (i->ISR & (I2C_ISR_NACKF | I2C_ISR_BERR)) {
-                return finish(i);
+                return finish(i, started);
             }
             i->TXDR = w[n];
         }
         if (!rlen) {
-            return finish(i);
+            return finish(i, started);
         }
-        if (!TARGET_WAIT_UNTIL(i->ISR & (I2C_ISR_TC | I2C_ISR_NACKF), I2C_OP_TIMEOUT_MS)) {
-            return finish(i);
+        if (!I2C_WAIT(i->ISR & (I2C_ISR_TC | I2C_ISR_NACKF))) {
+            return finish(i, started);
         }
         if (i->ISR & I2C_ISR_NACKF) {
-            return finish(i);
+            return finish(i, started);
         }
     }
     i->CR2 = ((uint32_t)addr7 << 1) | ((uint32_t)rlen << I2C_CR2_NBYTES_Pos) | I2C_CR2_RD_WRN
              | I2C_CR2_AUTOEND | I2C_CR2_START;
     for (size_t n = 0; n < rlen; n++) {
-        if (!TARGET_WAIT_UNTIL(i->ISR & (I2C_ISR_RXNE | I2C_ISR_NACKF | I2C_ISR_BERR), I2C_OP_TIMEOUT_MS)) {
-            return finish(i);
+        if (!I2C_WAIT(i->ISR & (I2C_ISR_RXNE | I2C_ISR_NACKF | I2C_ISR_BERR))) {
+            return finish(i, started);
         }
         if (i->ISR & (I2C_ISR_NACKF | I2C_ISR_BERR)) {
-            return finish(i);
+            return finish(i, started);
         }
         r[n] = (uint8_t)i->RXDR;
     }
-    return finish(i);
+    return finish(i, started);
 }
 
 int hal_i2c_write(uint8_t bus, uint8_t addr7, const uint8_t *data, size_t len)

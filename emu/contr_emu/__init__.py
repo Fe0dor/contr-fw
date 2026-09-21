@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from contr_emu.device import Device
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 
 class Emulator:

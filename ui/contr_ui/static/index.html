@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CONTR · Пульт стенда</title><link rel="stylesheet" href="/style.css"><script defer src="/app.js"></script><script defer src="/commands.js"></script><script defer src="/relays.js"></script></head>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CONTR · Пульт стенда</title><link rel="stylesheet" href="/style.css"><script defer src="/app.js"></script><script defer src="/commands.js"></script><script defer src="/relays.js"></script><script defer src="/sections.js"></script></head>
 <body>
 <aside class="sidebar">
   <a class="brand" href="/"><span class="brand-mark">C<span></span></span><span>CONTR<small>ПУЛЬТ СТЕНДА</small></span></a>
@@ -10,6 +10,7 @@
     <button class="nav" data-page="diagnostics"><span>⌁</span>Диагностика</button>
     <button class="nav" data-page="configuration"><span>☷</span>Конфигурация</button>
     <button class="nav" data-page="relays"><span>▦</span>Реле</button>
+    <button class="nav" data-page="sections"><span>Ω</span>Секции и сопротивления</button>
     <button class="nav" data-page="commands"><span>⌘</span>Команды</button>
     <button class="nav" data-page="scripts"><span>▷</span>Сценарии</button>
     <button class="nav" data-page="update"><span>↥</span>Обновление</button>
@@ -17,7 +18,7 @@
     <button class="nav" data-page="terminal"><span>›_</span>Терминал</button>
     <button class="nav" data-page="journal"><span>≡</span>Журнал событий</button>
   </nav>
-  <div class="sidebar-bottom"><span class="dot" id="side-dot"></span><span id="side-status">Нет подключения</span><small>Протокол 0.3 · шаг 3</small></div>
+  <div class="sidebar-bottom"><span class="dot" id="side-dot"></span><span id="side-status">Нет подключения</span><small>Протокол 0.4 · шаг 4</small></div>
 </aside>
 <div class="workspace">
   <header class="topbar"><div class="breadcrumbs">Стенд <span>/</span> <strong id="breadcrumb">Обзор устройства</strong></div><div class="top-actions"><span class="pill" id="channel-pill">Не подключено</span><button class="safe-button" id="safe" disabled><span>■</span> SAFE</button></div></header>
@@ -66,6 +67,31 @@
         <p class="form-note">Применение списка выключает все неуказанные реле. Пустой список выключает все. Блокировки проверяет контроллер.</p>
         <p id="relays-status" aria-live="polite">Ожидание данных</p><pre id="relays-result" class="command-response" aria-live="polite">Команда ещё не выполнялась</pre>
       </article><div id="relays-blocks" class="relay-blocks"></div>
+    </section>
+
+    <section class="page" id="page-sections" hidden>
+      <div class="page-title"><div><div class="eyebrow">ШАГ 4 · R1–R4</div><h1>Секции и сопротивления</h1><p>Питание секций и коды отдельных элементов с контрольным чтением.</p></div><button class="button" data-send="RES:STAT?">↻ Прочитать состояние</button></div>
+      <p class="form-note">Коды получены из регистров микросхем. Значения в омах нужно измерить отдельно. После включения: POT 128, POTH 512, матрицы 0.</p>
+      <div id="sections-cards" class="two-columns"></div>
+      <pre id="sections-reply" class="section-reply" role="status">Ответ последней команды появится здесь.</pre>
+      <article class="card calibration-card">
+        <div class="card-heading"><div><h2>Характеристика элемента</h2><p>Шунтируйте соседние элементы и подключите мультиметр к выводам выбранного канала.</p></div><span class="pill">Ручное измерение</span></div>
+        <div class="calibration-fields">
+          <label>Канал и элемент<select id="cal-element" aria-label="Элемент для измерения"></select></label>
+          <label>Стенд / плата<input id="cal-board" placeholder="Метка платы, если серийный номер не назначен"></label>
+          <label>Прибор и схема шунтов<input id="cal-setup" placeholder="Мультиметр, перемычки, условия"></label>
+        </div>
+        <p class="form-note" id="cal-instruction"></p><div class="button-row" id="cal-grid"></div>
+        <p id="cal-pending" role="status">Выберите код из сетки, затем введите показание мультиметра.</p>
+        <form id="cal-form" class="calibration-fields">
+          <label>Измеренное сопротивление, Ом<input id="cal-ohms" type="number" min="0" step="any" required placeholder="Например, 1234.5"></label>
+          <label>Примечание<input id="cal-note" placeholder="Необязательно"></label>
+          <button id="cal-save" class="button primary" type="submit" disabled>Записать точку</button>
+        </form>
+        <div class="form-actions"><button class="button" id="cal-export">↓ Скачать CSV</button><span class="form-note">Точки сохраняются в этом браузере. Экспортируйте CSV для протокола и калибровки.</span></div>
+        <div class="table-scroll"><table><thead><tr><th>Время</th><th>Устройство</th><th>Элемент</th><th>Код</th><th>Ом</th><th></th></tr></thead><tbody id="cal-table"></tbody></table></div>
+        <p class="form-note">Для R1/R3 проверяйте каждый бит матрицы и все биты вместе: характеристика может быть немонотонной. Данные эмулятора не являются калибровкой платы.</p>
+      </article>
     </section>
 
     <section class="page" id="page-commands" hidden>

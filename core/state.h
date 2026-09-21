@@ -40,6 +40,7 @@ struct desired {
     bool psu_hlg_on;
     uint16_t psu_dac;
     bool section_on[2];
+    int16_t section_code[2][5]; /* -1: unknown; checked volatile register values */
     uint32_t dut_lines;             /* биты C1…C20 */
     uint16_t load_dac;
     uint32_t load_pwm_freq;

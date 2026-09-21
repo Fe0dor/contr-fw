@@ -67,7 +67,7 @@ class Handler(BaseHTTPRequestHandler):
         path = url.path
         bridge = self.server.bridge
         if path == "/api/bootstrap":
-            return self._reply(200, {"token": self.server.token, "ports": serial_ports(), "version": "0.2.0"})
+            return self._reply(200, {"token": self.server.token, "ports": serial_ports(), "version": "0.4.0"})
         if path == "/api/state":
             try:
                 since = max(0, int(parse_qs(url.query).get("since", ["0"])[0]))
@@ -83,6 +83,7 @@ class Handler(BaseHTTPRequestHandler):
         assets = {"/": ("index.html", "text/html"), "/terminal": ("index.html", "text/html"),
                   "/commands.js": ("commands.js", "text/javascript"),
                   "/relays.js": ("relays.js", "text/javascript"),
+                  "/sections.js": ("sections.js", "text/javascript"),
                   "/app.js": ("app.js", "text/javascript"), "/style.css": ("style.css", "text/css")}
         if path not in assets:
             return self._reply(404, {"error": "Страница не найдена"})

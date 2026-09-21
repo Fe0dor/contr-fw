@@ -43,6 +43,16 @@ void host_sr_loop_broken(bool broken);
 typedef int (*host_i2c_fn)(uint8_t bus, uint8_t addr7, const uint8_t *w, size_t wlen, uint8_t *r, size_t rlen);
 void host_i2c_set_handler(host_i2c_fn fn);
 
+/* Register models and deterministic faults, available only in host builds. */
+enum host_section_fault {HOST_SECTION_OK, HOST_SECTION_TRANSIENT, HOST_SECTION_RESET,
+                         HOST_SECTION_POWER, HOST_SECTION_MISSING, HOST_SECTION_MISMATCH};
+void host_sections_reset(void);
+void host_sections_gpio(uint8_t port,uint8_t pin,enum hal_pin_mode mode,bool level);
+int host_sections_xfer(uint8_t bus,uint8_t addr,const uint8_t *w,size_t wn,uint8_t *r,size_t rn);
+void host_section_fault(unsigned bus,uint8_t addr,enum host_section_fault fault,unsigned count);
+unsigned host_sections_forbidden(void);
+unsigned host_section_value(unsigned bus,uint8_t addr);
+
 /* ---- SPI A: ответ модели на следующий обмен ---- */
 void host_spia_set_reply(const uint8_t *rx, size_t len);
 

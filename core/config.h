@@ -6,7 +6,7 @@
 
 #ifndef FW_VERSION_MAJOR
 #define FW_VERSION_MAJOR 0
-#define FW_VERSION_MINOR 3
+#define FW_VERSION_MINOR 4
 #define FW_VERSION_PATCH 0
 #endif
 #define FW_MODEL "CONTR"
@@ -14,7 +14,9 @@
 
 #define BOARD_REV 1
 #define PWRON_AB_ON_LEVEL 1     /* 1: включено — вывод отпущен во вход, выключено — выход 0 */
+#ifndef PWROK_PRESENT
 #define PWROK_PRESENT 0
+#endif
 #define PWROK_ACTIVE_LOW 1
 #define PWROK_AB_ACTIVE_LOW 1   /* ОТКРЫТО-5 */
 #define CS_LOAD_ON_SR 1         /* SR0.2.B */

@@ -13,9 +13,10 @@ import json
 import zlib
 from dataclasses import dataclass, field
 from pathlib import Path
+from .sections import Sections
 
 GEN = Path(__file__).resolve().parents[2] / "gen"
-VERSION = "0.3.0"
+VERSION = "0.4.0"
 VENDOR = "TESTDUT"
 MODEL = "CONTR"
 BOARD_REV = 1
@@ -73,6 +74,7 @@ class Device:
     """Состояние и команды. Каналы: 'tcp' (с префиксом G<n>;) и 'console'."""
 
     def __init__(self) -> None:
+        self.sections = Sections(self, CommandError)
         self.numbers, self.plugin = load_tables()
         self.relays = {r["name"]: r for r in self.numbers["relays"]}
         self.now_ms = 0
@@ -125,6 +127,8 @@ class Device:
     def safe_enter(self, reason: str) -> bool:
         self.safe = SafeReport(self.safe.seq + 1, reason, ["OK", "SILENT", "OK", "OK", "OK", "OK"], 0)
         self.relays_on.clear()
+        self.sections.off(0)
+        self.sections.off(1)
         self.in_safe_state = True
         self.generation += 1
         self.log_event(f"SAFE {reason} OK 0 ms")
@@ -169,6 +173,8 @@ class Device:
                 self.trial_bank = None
         self.generation = 0
         self.relays_on.clear()
+        self.sections.off(0)
+        self.sections.off(1)
         self.in_safe_state = True
         self.safe = SafeReport(0, "RESET")
 
@@ -196,10 +202,10 @@ class Device:
         return prefix + body
 
     QUERIES = {"*IDN?", "SYST:SAFE?", "SYST:ERR?", "SYST:LOG?", "SYST:CONF?", "SYST:NET?", "SYST:UPD:STAT?",
-               "TEST:ALL?", "INTERLOCK:LIST?", "ROUT:STAT?"}
+               "TEST:ALL?", "INTERLOCK:LIST?", "ROUT:STAT?", "RES:STAT?"}
     CONSOLE_ONLY = {"SYST:PROV:SERIAL", "SYST:PROV:NET"}
-    SETS = {"ROUT:HIGH", "ROUT:LOW", "ROUT:SET", "ROUT:LOW:ALL", "SYST:UPD:BEGIN", "SYST:UPD:DATA", "SYST:UPD:COMMIT", "SYST:UPD:ABORT", "SYST:UPD:CONFIRM"}
-    ARGS = {"ROUT:HIGH": (1, 81), "ROUT:LOW": (1, 81), "ROUT:SET": (0, 81), "ROUT:LOW:ALL": (0, 0), "ROUT:STAT?": (0, 0), "*IDN?": (0, 0), "SAFE": (0, 0), "SYST:SAFE?": (0, 0), "SYST:ERR?": (0, 0), "SYST:LOG?": (0, 0),
+    SETS = {"RES:PWR", "RES:SET", "ROUT:HIGH", "ROUT:LOW", "ROUT:SET", "ROUT:LOW:ALL", "SYST:UPD:BEGIN", "SYST:UPD:DATA", "SYST:UPD:COMMIT", "SYST:UPD:ABORT", "SYST:UPD:CONFIRM"}
+    ARGS = {"RES:PWR": (2, 2), "RES:SET": (3, 3), "RES:STAT?": (0, 0), "ROUT:HIGH": (1, 81), "ROUT:LOW": (1, 81), "ROUT:SET": (0, 81), "ROUT:LOW:ALL": (0, 0), "ROUT:STAT?": (0, 0), "*IDN?": (0, 0), "SAFE": (0, 0), "SYST:SAFE?": (0, 0), "SYST:ERR?": (0, 0), "SYST:LOG?": (0, 0),
             "SYST:CONF?": (0, 0), "SYST:NET?": (0, 0), "SYST:PROV:SERIAL": (1, 1), "SYST:PROV:NET": (1, 4),
             "SYST:UPD:BEGIN": (3, 3), "SYST:UPD:DATA": (1, 1), "SYST:UPD:COMMIT": (0, 0), "SYST:UPD:ABORT": (0, 0),
             "SYST:UPD:STAT?": (0, 0), "SYST:UPD:CONFIRM": (0, 0), "TEST:ALL?": (0, 0), "INTERLOCK:LIST?": (0, 0)}
@@ -222,6 +228,15 @@ class Device:
         if channel == "console" and name not in self.QUERIES and name != "SAFE" and name not in self.CONSOLE_ONLY:
             self.generation += 1
         return result
+
+    def cmd_res_pwr(self, args):
+        return self.sections.power(args)
+
+    def cmd_res_set(self, args):
+        return self.sections.set(args)
+
+    def cmd_res_stat_q(self, args):
+        return self.sections.status()
 
     # ---- команды ----
 
@@ -388,7 +403,11 @@ class Device:
 
     def cmd_test_all_q(self, args: list[str]) -> str:
         verdict = "FAIL" if not self.optbytes_ok or not self.sr_loop_ok else "WARN"
-        return (f"{verdict};SR0:{'OK' if self.sr_loop_ok else 'FAIL'};SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;"
+        i2c = ['SKIP,OFF' if not self.sections.on[b] else
+               ('FAIL' if any((b, a) in self.sections.faults for a in (0x2c,0x2e,0x2f,0x27)) else 'OK') for b in range(2)]
+        if 'FAIL' in i2c:
+            verdict = 'FAIL'
+        return (f"{verdict};SR0:{'OK' if self.sr_loop_ok else 'FAIL'};SR1:UNVERIFIED;I2C_A:{i2c[0]};I2C_B:{i2c[1]};DCOK:1;ALARM:1;"
                 f"LOADBOARD:LINK_LOST;INTERLOCK:{self.plugin['checksum']};PROV:{self.serial or 'UNPROVISIONED'};"
                 f"OPTBYTES:{'OK' if self.optbytes_ok else 'MISMATCH'};NET:{self.mode_name()},{self.current_ip()},UP;"
                 f"RESET:{self.reset_cause};SAFE:SILENT")

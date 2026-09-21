@@ -7,6 +7,7 @@
 #include "errlog.h"
 #include "hal.h"
 #include "signals.h"
+#include "sections.h"
 #include "sr.h"
 
 struct desired desired;
@@ -93,9 +94,8 @@ static enum safe_step_result step_relays_off(void)
 /* Шаг 6: секции выключить. */
 static enum safe_step_result step_sections_off(void)
 {
-    signal_set(SIG_PWRON_A, false);
-    signal_set(SIG_PWRON_B, false);
-    desired.section_on[0] = desired.section_on[1] = false;
+    section_off(0);
+    section_off(1);
     return STEP_OK;
 }
 

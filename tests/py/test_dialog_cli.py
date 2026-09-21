@@ -17,4 +17,5 @@ def test_dialog_cli_reports_utf8_with_cp1252_environment():
     )
     output = result.stdout.decode('utf-8')
     assert result.returncode == 0, output + result.stderr.decode('utf-8', 'replace')
-    assert '57 проверок, 0 с ошибками, 0 пропущено' in output
+    import re
+    assert re.search(r'итого: \d+ файлов, \d+ проверок, 0 с ошибками, 0 пропущено', output)

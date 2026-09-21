@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.25)
 #   host   — логика core/ с заглушками hal/host: тесты ctest и процесс contr-host
 #            для прогонщика диалогов (пресет `host`).
 # Версия проекта — версия прошивки (*IDN?, заголовок образа).
-project(contr_fw VERSION 0.3.0 LANGUAGES C ASM)
+project(contr_fw VERSION 0.4.0 LANGUAGES C ASM)
 
 option(CONTR_HIL_HANG_AFTER_INIT "HIL ONLY: hang after boot check to test watchdog rollback" OFF)
 
@@ -45,6 +45,7 @@ set(CORE_SOURCES
     core/update.c
     core/safe.c
     core/relays.c
+    core/sections.c
     core/sr.c
     core/signals.c
     core/dbg.c
@@ -126,12 +127,12 @@ if(CONTR_TARGET)
     )
 else()
     # ---- сборка для хоста: заглушки и тесты (FW-246) ---------------------------
-    add_library(contr_hal_mem STATIC hal/host/stubs.c hal/host/mem_channels.c)
+    add_library(contr_hal_mem STATIC hal/host/stubs.c hal/host/sections_model.c hal/host/mem_channels.c)
     target_include_directories(contr_hal_mem PUBLIC hal hal/host)
     contr_core_library(contr_core_mem contr_hal_mem)
     target_link_libraries(contr_hal_mem PUBLIC contr_core_mem)
 
-    add_library(contr_hal_sock STATIC hal/host/stubs.c hal/host/sock_channels.c)
+    add_library(contr_hal_sock STATIC hal/host/stubs.c hal/host/sections_model.c hal/host/sock_channels.c)
     target_include_directories(contr_hal_sock PUBLIC hal hal/host)
     contr_core_library(contr_core_sock contr_hal_sock)
     target_link_libraries(contr_hal_sock PUBLIC contr_core_sock)
@@ -143,6 +144,13 @@ else()
     target_link_libraries(contr-host PRIVATE contr_core_sock contr_hal_sock)
 
     enable_testing()
+    # The board uses PWROK_PRESENT=0; independently exercise the ready-pin branch.
+    contr_core_library(contr_core_pwrok contr_hal_mem)
+    target_compile_definitions(contr_core_pwrok PRIVATE PWROK_PRESENT=1)
+    add_executable(test_sections_ready tests/sections_ready.c)
+    target_include_directories(test_sections_ready PRIVATE tests/host)
+    target_link_libraries(test_sections_ready PRIVATE contr_core_pwrok contr_hal_mem)
+    add_test(NAME test_sections_ready COMMAND test_sections_ready)
     file(GLOB TEST_SOURCES CONFIGURE_DEPENDS tests/host/test_*.c)
     foreach(src IN LISTS TEST_SOURCES)
         get_filename_component(name ${src} NAME_WE)
