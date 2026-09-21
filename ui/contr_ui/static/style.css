@@ -21,3 +21,5 @@
 .commands-table tr:hover{background:#fcfdfd}
 
 .relay-blocks{display:grid;gap:20px;margin-top:24px}.relay-switch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:10px;margin-top:16px}.relay-switch{display:flex;flex-direction:column;gap:7px;align-items:flex-start;padding:14px;border:1px solid #d7dfe6;border-radius:9px;background:#f8fafb;color:#243d4d;cursor:pointer;text-align:left}.relay-switch small{font-size:11px;color:#627787}.relay-switch.on{background:#def5e9;border-color:#278561}.relay-switch.conflict{outline:2px solid #c34343;background:#fff0ed}.relay-switch.group-selected{border-bottom:4px solid #587dac}.relay-switch:disabled{cursor:default;opacity:.6}.relay-level{font-size:10px;font-weight:700}.relay-switch.on .relay-level{color:#156044}.relay-groups{min-height:14px}#relays-result{margin:12px 0 0}#relays-target{min-width:250px}
+
+.commands-table .command-step th{background:#eaf2f4;padding:16px 18px;border-top:2px solid #d4e2e7;text-align:left;color:#214956}.command-step strong{font-size:14px}.command-step .pill{margin-left:16px;font-weight:400}

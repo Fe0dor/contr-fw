@@ -1,16 +1,24 @@
 """Implemented protocol commands. Coverage is checked against core/cmd.c."""
 
-def entry(name, description, *, args="", console=False, bringup=False, confirm=""):
-    return dict(name=name, description=description, args=args, console=console,
+STEPS = {
+    1: "Инициализация периферии и наладка",
+    2: "Протокол, сеть и обновление",
+    3: "Реле и блокировки",
+}
+
+
+def entry(name, description, *, args="", console=False, bringup=False, confirm="", step=2):
+    step = 1 if bringup else step
+    return dict(step=step, step_title=STEPS[step], name=name, description=description, args=args, console=console,
                 bringup=bringup, confirm=confirm)
 
 
 COMMAND_CATALOG = (
-    entry("ROUT:HIGH", "Включить перечисленные реле, сохранив остальные. Блокировки проверяются до переключения.", args="M4,V1.1"),
-    entry("ROUT:LOW", "Выключить перечисленные реле, сохранив остальные.", args="M4,V1.1"),
-    entry("ROUT:LOW:ALL", "Выключить все реле."),
-    entry("ROUT:SET", "Установить точный список реле; остальные выключить. Пустой список выключает все.", args="M5 или пусто"),
-    entry("ROUT:STAT?", "Включённые реле в каноническом порядке по записанному образу; не измерение контактов."),
+    entry("ROUT:HIGH", step=3, description= "Включить перечисленные реле, сохранив остальные. Блокировки проверяются до переключения.", args="M4,V1.1"),
+    entry("ROUT:LOW", step=3, description= "Выключить перечисленные реле, сохранив остальные.", args="M4,V1.1"),
+    entry("ROUT:LOW:ALL", step=3, description= "Выключить все реле."),
+    entry("ROUT:SET", step=3, description= "Установить точный список реле; остальные выключить. Пустой список выключает все.", args="M5 или пусто"),
+    entry("ROUT:STAT?", step=3, description= "Включённые реле в каноническом порядке по записанному образу; не измерение контактов."),
     entry("*IDN?", "Производитель, модель, серийный номер и версия прошивки."),
     entry("SAFE", "Перевести устройство в безопасное состояние. Прерывает текущую операцию и отменяет старую очередь пульта."),
     entry("SYST:SAFE?", "Отчёт о последнем входе в SAFE: причина, результаты шагов и длительность."),
@@ -34,7 +42,7 @@ COMMAND_CATALOG = (
     entry("SYST:UPD:CONFIRM", "Подтвердить работающий пробный образ и отменить его автоматический откат.",
           confirm="Подтверждайте только проверенный пробный образ. Автоматический откат будет отключён."),
     entry("TEST:ALL?", "Самодиагностика узлов и готовности. WARN и SKIP показывают непроверенные или выключенные узлы."),
-    entry("INTERLOCK:LIST?", "Таблица реле: имена, номера, блоки, адреса и группы; версия таблицы и контрольная сумма."),
+    entry("INTERLOCK:LIST?", step=3, description= "Таблица реле: имена, номера, блоки, адреса и группы; версия таблицы и контрольная сумма."),
     entry("DBG:PIN", "Установить сигнал или реле напрямую: имя и логический уровень 0/1. Обходит штатные блокировки.",
           args="имя,0|1", bringup=True, confirm="Прямая запись сигнала или реле обходит штатные блокировки. Проверьте назначение выхода."),
     entry("DBG:PIN?", "Прочитать логическое состояние сигнала или реле по имени.", args="Имя сигнала или реле", bringup=True),

@@ -1,5 +1,6 @@
 /* Command rows retain their own replies, independent of background polling. */
 const commandRows = [];
+const commandSections = [];
 function commandUnavailable(item) {
   if (!state?.connected) return 'Подключите устройство';
   if (item.name !== 'SAFE' && activeJob()) return 'Выполняется сценарий или обновление';
@@ -21,9 +22,14 @@ function filterCommandRows() {
   let shown = 0;
   for (const row of commandRows) {
     const item = row.item;
-    row.el.hidden = !(`${item.name} ${item.description} ${item.args}`.toLocaleLowerCase('ru').includes(query)
+    row.el.hidden = !(`Шаг ${item.step} ${item.step_title} ${item.name} ${item.description} ${item.args}`.toLocaleLowerCase('ru').includes(query)
       && (filter === 'all' || (filter === 'bringup') === item.bringup));
     if (!row.el.hidden) shown++;
+  }
+  for (const section of commandSections) {
+    const count = commandRows.filter(row => row.item.step === section.step && !row.el.hidden).length;
+    section.el.hidden = count === 0;
+    section.count.textContent = `${count} команд`;
   }
   text('commands-count', `${shown} из ${commandRows.length}`);
   $('commands-empty').hidden = shown !== 0;
@@ -127,7 +133,23 @@ run(async () => {
   const response = await fetch('/api/commands');
   if (!response.ok) throw new Error('Не удалось загрузить список команд');
   const catalog = await response.json();
-  catalog.forEach(addCommandRow);
+  catalog.sort((a, b) => a.step - b.step);
+  let lastStep = null;
+  catalog.forEach((item, index) => {
+    if (item.step !== lastStep) {
+      const el = node('tr', 'command-step');
+      const heading = node('th');
+      heading.colSpan = 4;
+      heading.scope = 'rowgroup';
+      const count = node('span', 'pill neutral');
+      heading.append(node('strong', '', `Шаг ${item.step}. ${item.step_title}`), count);
+      el.append(heading);
+      $('commands-table').append(el);
+      commandSections.push({step: item.step, el, count});
+      lastStep = item.step;
+    }
+    addCommandRow(item, index);
+  });
   renderCommandAvailability();
   filterCommandRows();
 });
