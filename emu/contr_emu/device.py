@@ -178,6 +178,8 @@ class Device:
         self.psu = Psu(self, CommandError)
         self.psu.dcok_mode, self.psu.alarm, self.psu.dac_fail = external
         psu_ready = self.psu.safe_off()
+        dcok_started = self.now_ms
+        dcok_ready = self.psu.wait_off()
         self.reset_cause = "SOFTWARE"
         self.log_event("reset: software")
         if self.trial_bank == self.active_bank and not self.trial_confirmed and self.trial_boot_count:
@@ -201,6 +203,9 @@ class Device:
         self.safe = SafeReport(0, "RESET")
         if not psu_ready:
             self.safe.steps[0] = "FAIL"
+        if not dcok_ready:
+            self.safe.steps[3] = "FAIL"
+        self.safe.duration_ms = self.now_ms - dcok_started
 
     # ---- исполнение ----
 

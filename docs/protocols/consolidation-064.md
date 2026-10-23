@@ -18,3 +18,10 @@ Browser DOM model tests do not replace visual Chrome acceptance.
 
 Local acceptance: generator check; fresh host build and CTest; pytest; Node PSU panel;
 host/emulator dialogs; relay contract; target and bringup builds. HIL flags remain OFF.
+
+## SAFE validity after faults
+RESET now checks bounded DCOK fall before certifying SAFE, retaining early trial bookkeeping.
+A failed DAC write revokes authorization and marks PSU step 1 FAIL until a fresh SAFE succeeds.
+SYST:SAFE? is the latest SAFE report with current validity: sequence/reason/duration retain
+that transition's identity, but step 1 may be invalidated by a subsequent DAC fault. It is
+not an immutable historical record. Error responses identify the subsequent DAC failure.

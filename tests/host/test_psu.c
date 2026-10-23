@@ -69,9 +69,30 @@ static void safe_and_abort(void){
     clock_start(5);CHECK_STR(con_cmd("SAFE"),"OK");CHECK(observed.safe.complete);
     host_psu_dac_fail(true);CHECK_PREFIX(con_cmd("PSU:VOLT 48"),"ERR:PSU_FAULT");
     CHECK_PREFIX(con_cmd("PSU:STAT?"),"OFF:PSU_FAULT,OFF,40,?");
+    CHECK(!observed.safe.complete && observed.safe.steps[0]==STEP_FAILED);
+    CHECK_PREFIX(con_cmd("SYST:UPD:BEGIN 1024,0,0.6.4"),"ERR:NOT_SAFE");
+    CHECK_PREFIX(con_cmd("PSU:CAL:SAVE"),"ERR:NOT_SAFE");
     CHECK_PREFIX(con_cmd("PSU:OUTP RSP,ON"),"ERR:PSU_FAULT");CHECK(!desired.psu_rsp_on);
     CHECK_PREFIX(con_cmd("SAFE"),"ERR:SAFE_INCOMPLETE");CHECK(observed.safe.steps[0]==STEP_FAILED);
     host_psu_dac_fail(false);CHECK_STR(con_cmd("SAFE"),"OK");
+    host_psu_dac_fail(true);
+    CHECK_PREFIX(con_cmd("PSU:OUTP RSP,ON"),"ERR:PSU_FAULT");
+    CHECK(!observed.safe.complete && observed.safe.steps[0]==STEP_FAILED);
+    CHECK_PREFIX(con_cmd("SYST:UPD:BEGIN 1024,0,0.6.4"),"ERR:NOT_SAFE");
+    CHECK_PREFIX(con_cmd("PSU:CAL:SAVE"),"ERR:NOT_SAFE");
     host_reset_all();host_psu_dac_fail(true);board_early_init();core_init();CHECK(!observed.safe.complete);CHECK(observed.safe.steps[0]==STEP_FAILED);
 }
-int main(void){validation();startup_and_faults();safe_and_abort();return test_result("psu");}
+static void boot_dcok(void){
+    host_reset_all();board_early_init();input(SIG_RSP_DC_OK,true);clock_start(0);core_init();
+    CHECK(psu_dcok());CHECK(!observed.safe.complete);
+    CHECK(observed.safe.steps[3]==STEP_FAILED);
+    CHECK(observed.safe.duration_ms>=2000);
+    CHECK_PREFIX(con_cmd("SYST:UPD:BEGIN 1024,0,0.6.4"),"ERR:NOT_SAFE");
+    CHECK_PREFIX(con_cmd("PSU:CAL:SAVE"),"ERR:NOT_SAFE");
+    input(SIG_RSP_DC_OK,false);CHECK_STR(con_cmd("SAFE"),"OK");
+    CHECK(observed.safe.complete);
+    host_reset_all();board_early_init();input(SIG_RSP_DC_OK,true);clock_start(5);core_init();
+    CHECK(observed.safe.complete && observed.safe.steps[3]==STEP_OK);
+    CHECK(observed.safe.duration_ms>=50 && observed.safe.duration_ms<2000);
+}
+int main(void){validation();startup_and_faults();safe_and_abort();boot_dcok();return test_result("psu");}

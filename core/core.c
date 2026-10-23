@@ -423,7 +423,9 @@ void core_init(void)
     hal_gpio_config(led->port, led->pin, HAL_PIN_OUT, HAL_PULL_NONE, false);
 #endif
     dut_init();
+    uint32_t safe_started = hal_millis();
     bool psu_ready=psu_init();
+    bool dcok_off=psu_wait_dcok_off();
     section_off(0);
     section_off(1);
     /* FW-209: DAC minimum is already written; loadboard shutdown is step 7. */
@@ -434,9 +436,11 @@ void core_init(void)
     }
     observed.safe.steps[1] = STEP_SILENT;
     observed.safe.steps[0]=psu_ready?STEP_OK:STEP_FAILED;
-    observed.safe.complete = psu_ready;
+    observed.safe.steps[3]=dcok_off?STEP_OK:STEP_FAILED;
+    observed.safe.duration_ms = hal_millis() - safe_started;
+    observed.safe.complete = psu_ready && dcok_off;
     observed.in_safe_state = true;
-    cfg_set_erase_allowed(psu_ready);
+    cfg_set_erase_allowed(observed.safe.complete);
     netcfg_start();
     const char *cause = (observed.reset_cause & HAL_RST_IWDG) ? "watchdog"
                         : (observed.reset_cause & HAL_RST_PIN) ? "pin"

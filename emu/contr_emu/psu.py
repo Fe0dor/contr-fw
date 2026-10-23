@@ -36,7 +36,7 @@ class Psu:
         if self.service_mode:raise self.error('CAL_MODE')
         if self.cal is None:raise self.error('CAL_REQUIRED')
         if self.dac_fail:
-            self.known=False;self.rsp=self.starting=False;self.fault='PSU_FAULT';raise self.error('PSU_FAULT','DAC')
+            self.device.safe.steps[0]='FAIL';self.device.in_safe_state=False;self.known=False;self.rsp=self.starting=False;self.fault='PSU_FAULT';raise self.error('PSU_FAULT','DAC')
         i,f=divmod(mv-40000,1000)
         self.mv=mv;self.code=self.cal[i]+((self.cal[i+1]-self.cal[i])*f+500)//1000 if f else self.cal[i];self.known=True
         return 'OK'
@@ -50,7 +50,7 @@ class Psu:
             self.rsp=self.starting=False;self.fault='PSU_ALARM';raise self.error('PSU_ALARM')
         if self.rsp and self.dcok():return 'OK'
         if not self.known or self.dac_fail:
-            self.known=False;self.rsp=self.starting=False;self.fault='PSU_FAULT';raise self.error('PSU_FAULT','DAC')
+            self.device.safe.steps[0]='FAIL';self.device.in_safe_state=False;self.known=False;self.rsp=self.starting=False;self.fault='PSU_FAULT';raise self.error('PSU_FAULT','DAC')
         self.rsp=self.starting=True;self.fault='';self.started=self.device.now_ms
         while True:
             self.device.advance(1)
@@ -61,7 +61,7 @@ class Psu:
     def safe_off(self):
         self.rsp=self.hlg=self.starting=False;self.mv=40000
         self.service_mode=self.raw_ready=False
-        if self.dac_fail:self.known=False;self.trip('PSU_FAULT','DAC safe');return False
+        if self.dac_fail:self.device.safe.steps[0]='FAIL';self.device.in_safe_state=False;self.known=False;self.trip('PSU_FAULT','DAC safe');return False
         self.known=True;self.code=self.cal[0] if self.cal else 0;return True
     def wait_off(self):
         start=self.device.now_ms
@@ -79,7 +79,7 @@ class Psu:
         if safe and (not self.device.in_safe_state or 'FAIL' in self.device.safe.steps or self.service_mode):raise self.error('NOT_SAFE')
     def cal_apply(self,codes):
         if self.dac_fail:
-            self.known=False;self.rsp=False;self.fault='PSU_FAULT';self.device.in_safe_state=False;raise self.error('PSU_FAULT','DAC')
+            self.device.safe.steps[0]='FAIL';self.device.in_safe_state=False;self.known=False;self.rsp=False;self.fault='PSU_FAULT';self.device.in_safe_state=False;raise self.error('PSU_FAULT','DAC')
         self.cal=list(codes);self.code=codes[0];self.known=True;self.mv=40000
     def calibration(self,action,args):
         if action=='query':
@@ -102,11 +102,11 @@ class Psu:
             if args[0].upper() not in ('ON','OFF'):raise self.error('RANGE')
             self.rsp=self.starting=False;self.service_mode=args[0].upper()=='ON';self.raw_ready=False;self.device.in_safe_state=False
             if not self.service_mode:self.mv=40000
-            if self.dac_fail:self.known=False;self.fault='PSU_FAULT';raise self.error('PSU_FAULT','DAC')
+            if self.dac_fail:self.device.safe.steps[0]='FAIL';self.device.in_safe_state=False;self.known=False;self.fault='PSU_FAULT';raise self.error('PSU_FAULT','DAC')
             self.code=self.cal[0] if self.cal else 0;self.known=True
         elif action=='code':
             if not self.service_mode:raise self.error('CAL_MODE')
             if self.dac_fail:
-                self.known=False;self.rsp=self.raw_ready=False;self.fault='PSU_FAULT';raise self.error('PSU_FAULT','DAC')
+                self.device.safe.steps[0]='FAIL';self.device.in_safe_state=False;self.known=False;self.rsp=self.raw_ready=False;self.fault='PSU_FAULT';raise self.error('PSU_FAULT','DAC')
             self.code=codes[0];self.known=self.raw_ready=True
         return 'OK'

@@ -28,7 +28,14 @@ static void trip(enum err_code code,const char *detail)
 }
 static bool dac_write(uint16_t code)
 {
-    if (!hal_psu_dac_write(code)) {dac_known=false; return false;}
+    if (!hal_psu_dac_write(code)) {
+        dac_known=false;
+        observed.safe.steps[0]=STEP_FAILED;
+        observed.safe.complete=false;
+        observed.in_safe_state=false;
+        cfg_set_erase_allowed(false);
+        return false;
+    }
     desired.psu_dac=code; dac_known=true; return true;
 }
 bool psu_init(void)

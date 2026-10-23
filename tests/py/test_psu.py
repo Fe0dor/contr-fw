@@ -95,3 +95,35 @@ def test_dcok_raw_level_is_opposite_logical_status():
     assert command(d, "PSU:OUTP RSP,ON") == "OK"
     assert d.psu.status().endswith(",1,0")
     assert ";DCOK:0;" in command(d, "TEST:ALL?")
+
+
+def test_failed_dac_invalidates_safe_evidence():
+    d = Device()
+    assert command(d, "SAFE") == "OK"
+    d.psu.dac_fail = True
+    assert command(d, "PSU:VOLT 48").startswith("ERR:PSU_FAULT")
+    assert d.safe.steps[0] == "FAIL"
+    assert command(d, "SYST:UPD:BEGIN 1024,0,0.6.4").startswith("ERR:NOT_SAFE")
+    assert command(d, "PSU:CAL:SAVE").startswith("ERR:NOT_SAFE")
+    d.psu.dac_fail = False
+    assert command(d, "SAFE") == "OK"
+
+
+def test_reset_with_asserted_dcok():
+    d = Device()
+    d.psu.dcok_mode = '1'
+    d.reboot()
+    assert d.safe.steps[3] == "FAIL"
+    assert command(d, "SYST:UPD:BEGIN 1024,0,0.6.4").startswith("ERR:NOT_SAFE")
+    assert command(d, "PSU:CAL:SAVE").startswith("ERR:NOT_SAFE")
+
+
+
+def test_on_dac_failure_invalidates_safe():
+    d = Device()
+    assert command(d, "SAFE") == "OK"
+    d.psu.dac_fail = True
+    assert command(d, "PSU:OUTP RSP,ON").startswith("ERR:PSU_FAULT")
+    assert d.safe.steps[0] == "FAIL"
+    assert command(d, "SYST:UPD:BEGIN 1024,0,0.6.4").startswith("ERR:NOT_SAFE")
+    assert command(d, "PSU:CAL:SAVE").startswith("ERR:NOT_SAFE")
