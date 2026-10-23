@@ -13,6 +13,8 @@
 #include "netcfg.h"
 #include "safe.h"
 #include "signals.h"
+#include "dut.h"
+#include "psu.h"
 #include "sections.h"
 #include "sr.h"
 #include "state.h"
@@ -31,11 +33,14 @@ struct line {
 
 struct channel {
     volatile uint8_t ring[RING_SIZE];
+    /* Capture execution state at receipt, before the line queue can delay parsing. */
+    bool ring_busy[RING_SIZE];
     volatile size_t head, tail;   /* head читает главный контекст, tail пишет источник */
     char partial[CMD_LINE_MAX + 1];
     size_t partial_len;
     bool partial_overflow;
     bool ring_overflow;
+    uint16_t recovered_safe; /* complete SAFE lines rescued before buffer discard */
     struct line queue[LINE_QUEUE];
     size_t q_head, q_count;
     bool open;
@@ -50,8 +55,37 @@ static enum channel_id next_channel;
 static bool reply_started;
 static uint32_t reply_started_ms;
 static bool console_resync;
+static uint32_t led_changed_ms;
+static bool led_on;
 
 /* ---- кольца ---- */
+
+/* Inspect complete lines without consuming input. extra includes the byte
+ * that would overflow the ring, so a SAFE terminated exactly there is retained. */
+static unsigned buffered_safe_count(const struct channel *c, bool extra, uint8_t last)
+{
+    char text[CMD_LINE_MAX + 1];
+    size_t len = c->partial_len;
+    bool invalid = c->partial_overflow;
+    unsigned count = 0;
+    memcpy(text, c->partial, len);
+    size_t available = (c->tail + RING_SIZE - c->head) % RING_SIZE;
+    for (size_t i = 0; i < available + (extra ? 1u : 0u); i++) {
+        uint8_t b = i == available ? last : c->ring[(c->head + i) % RING_SIZE];
+        if (b == '\n') {
+            text[len] = '\0';
+            if (!invalid && cmd_is_safe_line(text)) count++;
+            len = 0;
+            invalid = false;
+        } else if (b == 0) {
+            invalid = true;
+        } else if (b != '\r') {
+            if (len < CMD_LINE_MAX) text[len++] = (char)b;
+            else invalid = true;
+        }
+    }
+    return count;
+}
 
 static void ring_push(struct channel *c, const uint8_t *buf, size_t len)
 {
@@ -62,28 +96,36 @@ static void ring_push(struct channel *c, const uint8_t *buf, size_t len)
         }
         size_t next = (c->tail + 1) % RING_SIZE;
         if (next == c->head) {
-            /* Reject corrupted input in full; never execute a truncated command. */
+            /* Preserve complete SAFE requests before discarding corrupted input.
+             * Other lines cannot be reconstructed after overflow. */
+            unsigned safe_count = buffered_safe_count(c, true, buf[i]);
+            unsigned room = UINT16_MAX - c->recovered_safe;
+            c->recovered_safe += (uint16_t)(safe_count < room ? safe_count : room);
+            if (safe_count && executing) abort_requested = true;
             c->head = c->tail;
             c->partial_len = 0;
             c->partial_overflow = true;
             c->ring_overflow = buf[i] != '\n';
             if (!c->ring_overflow) {
                 c->ring[c->tail] = '\n';
+                c->ring_busy[c->tail] = executing;
                 c->tail = next;
             }
             continue;
         }
         c->ring[c->tail] = buf[i];
+        c->ring_busy[c->tail] = executing;
         c->tail = next;
     }
 }
 
-static bool ring_pop(struct channel *c, uint8_t *out)
+static bool ring_pop(struct channel *c, uint8_t *out, bool *busy)
 {
     if (c->head == c->tail) {
         return false;
     }
     *out = c->ring[c->head];
+    *busy = c->ring_busy[c->head];
     c->head = (c->head + 1) % RING_SIZE;
     return true;
 }
@@ -94,6 +136,7 @@ static void channel_reset(struct channel *c)
     c->partial_len = 0;
     c->partial_overflow = false;
     c->ring_overflow = false;
+    c->recovered_safe = 0;
     c->q_head = c->q_count = 0;
 }
 
@@ -126,7 +169,7 @@ bool core_client_connected(void)
 
 /* ---- сборка строк ---- */
 
-static void enqueue_line(struct channel *c)
+static void enqueue_line(struct channel *c, bool received_busy)
 {
     if (c->q_count == LINE_QUEUE) {
         return; /* очередь полна: строка подождёт в partial — не бывает, partial уже собран */
@@ -136,7 +179,7 @@ static void enqueue_line(struct channel *c)
     memcpy(l->text, c->partial, c->partial_len + 1);
     l->overflow = c->partial_overflow;
     l->safe = !l->overflow && cmd_is_safe_line(l->text);
-    l->busy = executing && !l->safe;
+    l->busy = received_busy && !l->safe;
     if (l->safe && executing) {
         abort_requested = true;
     }
@@ -147,10 +190,20 @@ static void enqueue_line(struct channel *c)
 
 static void pump_channel(struct channel *c)
 {
+    while (c->recovered_safe && c->q_count < LINE_QUEUE) {
+        struct line *l = &c->queue[(c->q_head + c->q_count) % LINE_QUEUE];
+        strcpy(l->text, "SAFE");
+        l->safe = true;
+        l->busy = l->overflow = false;
+        c->q_count++;
+        c->recovered_safe--;
+        if (executing) abort_requested = true;
+    }
     uint8_t b;
-    while (c->q_count < LINE_QUEUE && ring_pop(c, &b)) {
+    bool received_busy;
+    while (c->q_count < LINE_QUEUE && ring_pop(c, &b, &received_busy)) {
         if (b == '\n') {
-            enqueue_line(c);
+            enqueue_line(c, received_busy);
         } else if (b == 0) {
             c->partial_overflow = true; /* never execute a C-string prefix */
         } else if (b == '\r') {
@@ -160,6 +213,9 @@ static void pump_channel(struct channel *c)
         } else {
             c->partial_overflow = true;
         }
+    }
+    if (executing && !abort_requested && buffered_safe_count(c, false, 0)) {
+        abort_requested = true;
     }
 }
 
@@ -179,6 +235,16 @@ static bool dequeue_line(struct channel *c, struct line *out)
 void svc_poll(void)
 {
     hal_wdt_kick();
+    /* Blue LD2 (PB7) indicates service-loop progress at 2 Hz.
+     * PB7 must remain an input when the SR0 loop is fitted. */
+#if !SR0_LOOP_PRESENT
+    uint32_t now = hal_millis();
+    if ((uint32_t)(now - led_changed_ms) >= 250u) {
+        led_changed_ms = now;
+        led_on = !led_on;
+        signal_set(SIG_SR_TEST_IN, led_on);
+    }
+#endif
     hal_net_poll();
     uint8_t buf[64];
     size_t n;
@@ -187,6 +253,8 @@ void svc_poll(void)
     }
     pump_channel(&channels[CH_TCP]);
     pump_channel(&channels[CH_CONSOLE]);
+    dut_poll();
+    psu_poll();
     netcfg_poll();
     upd_poll();
 }
@@ -303,8 +371,13 @@ void board_early_init(void)
     /* остальные сигналы по описанию, выводы реле — выходы 0 */
     signals_configure_rest();
     relay_pin_config_all_off();
-    /* 5. цепочки регистров начальным образом (FW-220) */
-    sr_start();
+    /* 5. выключить цепочки без ожиданий; полный образ после учёта trial. */
+    /* Quiesce external shift registers without waiting for SPI. */
+    for (uint8_t chain=0; chain<HAL_SR_CHAINS; chain++) {
+        hal_sr_ctrl(chain, HAL_SR_OE, false);
+        hal_sr_ctrl(chain, HAL_SR_SRCLR, true);
+        hal_sr_latch(chain);
+    }
     memset(desired.relays, 0, sizeof desired.relays);
 }
 
@@ -324,25 +397,50 @@ void core_init(void)
     client_lost = false;
     memset(&observed, 0, sizeof observed);
     errlog_init();
-    hal_init();
-    section_off(0);
-    section_off(1);
     hal_wdt_start(WDT_PERIOD_MS);
     observed.reset_cause = hal_reset_cause();
     cfg_init();
     upd_boot_check();
-    /* FW-209 п. 6: код ЦАП в минимум, GET_VERSION и гашение контроллеру нагрузок — модули
-     * БП и нагрузок появляются на шагах 6 и 7; здесь только состояние */
-    desired.psu_dac = PSU_DAC_MIN;
+#ifdef CONTR_HIL_COMPACT_ON_BOOT
+    if (upd_get_state()==UPD_TRIAL) {
+        cfg_set_erase_allowed(true);
+        int rc=cfg_compact();
+        log_event("HIL CFG compact %d",rc);
+        cfg_set_erase_allowed(false);
+    }
+#endif
+    /* Trial count must be durable before any clock/SPI/I2C wait can hang. */
+#ifdef CONTR_HIL_HANG_BEFORE_HAL
+    for (;;) {} /* HIL only: watchdog must return the previous bank on next boot */
+#endif
+    sr_start();
+    hal_init();
+    led_changed_ms = hal_millis();
+    led_on = false;
+    signal_set(SIG_LD1, false);
+#if !SR0_LOOP_PRESENT
+    const struct signal_desc *led = &signal_table[SIG_SR_TEST_IN];
+    hal_gpio_config(led->port, led->pin, HAL_PIN_OUT, HAL_PULL_NONE, false);
+#endif
+    dut_init();
+    uint32_t safe_started = hal_millis();
+    bool psu_ready=psu_init();
+    bool dcok_off=psu_wait_dcok_off();
+    section_off(0);
+    section_off(1);
+    /* FW-209: DAC minimum is already written; loadboard shutdown is step 7. */
     observed.safe.reason = SAFE_REASON_RESET;
     observed.safe.seq = 0;
     for (int i = 0; i < SAFE_STEPS; i++) {
         observed.safe.steps[i] = STEP_OK;
     }
     observed.safe.steps[1] = STEP_SILENT;
-    observed.safe.complete = true;
+    observed.safe.steps[0]=psu_ready?STEP_OK:STEP_FAILED;
+    observed.safe.steps[3]=dcok_off?STEP_OK:STEP_FAILED;
+    observed.safe.duration_ms = hal_millis() - safe_started;
+    observed.safe.complete = psu_ready && dcok_off;
     observed.in_safe_state = true;
-    cfg_set_erase_allowed(true);
+    cfg_set_erase_allowed(observed.safe.complete);
     netcfg_start();
     const char *cause = (observed.reset_cause & HAL_RST_IWDG) ? "watchdog"
                         : (observed.reset_cause & HAL_RST_PIN) ? "pin"

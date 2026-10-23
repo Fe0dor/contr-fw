@@ -54,6 +54,7 @@ unsigned host_sections_forbidden(void);
 unsigned host_section_value(unsigned bus,uint8_t addr);
 
 /* ---- SPI A: ответ модели на следующий обмен ---- */
+void host_psu_dac_fail(bool fail);
 void host_spia_set_reply(const uint8_t *rx, size_t len);
 
 /* ---- сброс и flash ---- */
@@ -69,6 +70,10 @@ void host_set_button(bool pressed);
 unsigned host_wdt_kicks(void);
 /* Число стёртых секторов банка и записей (для проверки, что flash не трогали). */
 unsigned host_flash_ops(void);
+/* Fail the next count CFG writes before changing flash (host tests only). */
+void host_cfg_fail_writes(unsigned count);
+/* Called after each CFG word program / erase chunk; may simulate power loss. */
+void host_cfg_flash_hook(void (*hook)(const char *op, size_t offset));
 
 /* ---- консоль в памяти ---- */
 void host_console_push(const uint8_t *buf, size_t len);

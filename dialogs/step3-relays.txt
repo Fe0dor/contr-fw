@@ -3,7 +3,7 @@
 <~ G{G};OK
 > ROUT:STAT?
 < G{G};
-> rout:high m4,v1.1,m4
+> rout:high m4,v1.1
 < G{G};OK
 > ROUT:STAT?
 < G{G};V1.1,M4
@@ -20,7 +20,7 @@
 > ROUT:STAT?
 < G{G};M5
 > TEST:ALL?
-<~ G{G};WARN;SR0:OK;SR1:UNVERIFIED;.*
+<~ G{G};WARN;SR0:SKIPPED;SR1:UNVERIFIED;.*
 > ROUT:STAT?
 < G{G};M5
 > ROUT:LOW M5

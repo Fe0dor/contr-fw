@@ -33,6 +33,9 @@ enum err_code {
     ERR_PROVISIONED,
     ERR_CONSOLE_ONLY,
     ERR_BUSY,
+    ERR_CAL_REQUIRED,
+    ERR_CAL_MODE,
+    ERR_CAL_STORAGE,
 };
 
 const char *cmd_err_name(enum err_code code);

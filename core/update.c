@@ -14,7 +14,7 @@
 #include "hal.h"
 #include "state.h"
 
-#define IMAGE_MAX (HAL_BANK_SIZE - 128u * 1024u) /* хвост банка — CFG */
+#define IMAGE_MAX HAL_IMAGE_MAX /* хвост банка — CFG */
 #define CFG_TAIL_OFFSET (HAL_BANK_SIZE - 128u * 1024u)
 
 /* заголовок текущего образа — заполняет компоновщик и mkimage */
@@ -29,7 +29,7 @@ const struct fw_header fw_header = {
     .ver_minor = FW_VERSION_MINOR,
     .ver_patch = FW_VERSION_PATCH,
     .image_size = 0xFFFFFFFFu,
-    .reserved = {0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu},
+    .reserved = {FW_STORAGE_LAYOUT, 0xFFFFFFFFu, 0xFFFFFFFFu},
 };
 
 static struct {
@@ -163,7 +163,17 @@ void upd_boot_check(void)
         return; /* хост */
     }
     t.boot_count++;
-    cfg_set_trial(&t);
+    if (cfg_set_trial(&t) != 0) {
+        /* Without a durable count, each watchdog reset would look like the
+         * first trial boot. Reject the candidate before normal operation. */
+        err_push(ERR_UPD_SEQ, "trial counter write failed");
+        log_event("update: trial counter failed, rollback");
+        if (hal_bank_set_boot(active == 1u ? 2u : 1u) != 0) {
+            err_push(ERR_UPD_SEQ, "rollback boot selection failed");
+        }
+        hal_reset();
+        return; /* host: target reset never returns */
+    }
     upd.state = UPD_TRIAL;
     upd.trial_pending = true;
     upd.trial_started_ms = hal_millis();
@@ -198,7 +208,7 @@ void cmd_upd_begin(struct cmdctx *c)
         resp_err(c, ERR_UPD_SEQ, "trial pending");
         return;
     }
-    if (!observed.in_safe_state) {
+    if (!observed.in_safe_state || !observed.safe.complete) {
         resp_err(c, ERR_NOT_SAFE, "STATE");
         return;
     }
@@ -225,6 +235,9 @@ void cmd_upd_begin(struct cmdctx *c)
         resp_err(c, ERR_UPD_HEADER, "version");
         return;
     }
+    /* A new erase invalidates any earlier transfer, including its CRC/carry. */
+    reset_receiving();
+    bool had_client = core_client_connected();
     /* стирание неактивного банка посекторно; между секторами — служебный шаг */
     for (uint32_t s = 0; s < HAL_BANK_SECTORS; s++) {
         if (hal_bank_erase_inactive(s) != 0) {
@@ -232,6 +245,10 @@ void cmd_upd_begin(struct cmdctx *c)
             return;
         }
         svc_poll();
+        if (core_abort_requested() || (had_client && !hal_net_client_connected())) {
+            resp_err(c, ERR_ABORTED, NULL);
+            return;
+        }
     }
     upd.state = UPD_RECEIVING;
     upd.expected_size = (uint32_t)size;
@@ -303,8 +320,9 @@ static int flush_carry(void)
 
 static int copy_cfg_to_inactive(void)
 {
-    uint8_t snap[3 * CFG_RECORD_SIZE];
+    uint8_t snap[CFG_SNAPSHOT_MAX];
     size_t n = cfg_snapshot(snap, sizeof snap);
+    if(n==SIZE_MAX)return -1;
     if (hal_bank_erase_inactive(HAL_BANK_SECTORS - 1u) != 0) {
         return -1;
     }
@@ -343,6 +361,11 @@ void cmd_upd_commit(struct cmdctx *c)
     if (strncmp(h.model, FW_MODEL, 8) != 0) {
         reset_receiving();
         resp_err(c, ERR_UPD_HEADER, "model");
+        return;
+    }
+    if (h.reserved[0] != FW_STORAGE_LAYOUT) {
+        reset_receiving();
+        resp_err(c, ERR_UPD_HEADER, "layout");
         return;
     }
     if (h.revision != BOARD_REV) {

@@ -72,6 +72,8 @@ void hal_sr_latch(uint8_t chain);
 /* ---------------------------------------------------------------- SPI A: ЦАП и контроллер нагрузок */
 
 /* Полнодуплексный обмен; CS активирует вызывающий (CS_PWR — вывод, CS_LOAD — бит SR0). */
+/* TPC116S1: 24 clocks, falling-edge capture; restores shared SPI mode. */
+bool hal_psu_dac_write(uint16_t code);
 void hal_spia_xfer(const uint8_t *tx, uint8_t *rx, size_t len);
 
 /* ---------------------------------------------------------------- I²C секций A (0) и B (1) */
@@ -133,9 +135,17 @@ void core_net_on_closed(void);                          /* активный кл
 /* ---------------------------------------------------------------- flash: сектор CFG и второй банк */
 
 #define HAL_CFG_SIZE (16u * 1024u)
+#define HAL_IMAGE_MAX (768u * 1024u)
+#define HAL_CFG_BACKUP_OFFSET HAL_IMAGE_MAX
+#define HAL_CFG_OFFSET (896u * 1024u)
+#define HAL_CFG_BACKUP_SIZE (128u * 1024u)
+#define HAL_CFG_STORAGE_SIZE (128u * 1024u)
 
 const uint8_t *hal_cfg_base(void);
 int hal_cfg_erase(void);
+const uint8_t *hal_cfg_backup_base(void);
+int hal_cfg_backup_erase(void);
+int hal_cfg_backup_write(uint32_t offset, const uint8_t *data, size_t len);
 int hal_cfg_write(uint32_t offset, const uint8_t *data, size_t len); /* offset и len кратны 4 */
 
 #define HAL_BANK_SIZE (1024u * 1024u)

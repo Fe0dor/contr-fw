@@ -1,6 +1,5 @@
 /* Энергонезависимые данные (А10): сектор CFG как журнал записей фиксированного формата.
- * Действует последняя корректная запись своего типа. Уплотнение временно отключено:
- * без устойчивого резервирования нельзя стирать единственную копию данных. */
+ * Действует последняя корректная запись своего типа. Уплотнение использует отдельный резервный сектор и восстановление после сброса. */
 #ifndef CORE_CFG_H
 #define CORE_CFG_H
 
@@ -16,7 +15,16 @@ enum cfg_type {
     CFG_SERIAL = 1,
     CFG_NET = 2,
     CFG_TRIAL = 3,
+    CFG_PSU_CAL = 4,
+    CFG_TYPE_COUNT = 5,
 };
+
+#define PSU_CAL_POINTS 15u
+#define CFG_SNAPSHOT_MAX ((CFG_TYPE_COUNT-1u)*CFG_RECORD_SIZE)
+struct cfg_psu_cal { uint16_t code[PSU_CAL_POINTS]; };
+bool cfg_get_psu_cal(struct cfg_psu_cal *out);
+int cfg_set_psu_cal(const struct cfg_psu_cal *cal);
+bool cfg_psu_cal_valid(const struct cfg_psu_cal *cal);
 
 struct cfg_net {
     uint8_t dhcp;
@@ -41,7 +49,7 @@ int cfg_set_serial(const char *serial);
 int cfg_set_net(const struct cfg_net *net);
 int cfg_set_trial(const struct cfg_trial *trial);
 
-/* Свободных записей осталось; уплотнение отключено до реализации устойчивого backup. */
+/* Свободные записи; 0 также означает незавершённое восстановление flash. */
 size_t cfg_free_records(void);
 int cfg_compact(void);
 

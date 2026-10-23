@@ -1,8 +1,8 @@
 /* Цепочки 74HC595: SR0 на SPI3 (SCK PC10, SER PC12; RCLK PF7, \SRCLR PF6, \OE PC11),
  * SR1 на SPI2 (SCK PB10, SER PB15; RCLK PB1, \SRCLR PB11, \OE PB12).
  *
- * Инициализируется лениво при первом обращении: порядок старта FW-220 идёт из
- * board_early_init() до hal_init(), на HSI 16 МГц. SPI только на передачу, режим 0,
+ * Инициализируется лениво при первом обращении: безопасное отключение идёт из board_early_init(),
+ * полный образ — после проверки trial, до hal_init(), на HSI 16 МГц. SPI только на передачу, режим 0,
  * MSB первым: первый переданный бит доходит до выхода H самого дальнего регистра.
  */
 #include "hal.h"
@@ -72,6 +72,10 @@ void hal_sr_shift(uint8_t chain, const uint8_t *image, size_t len)
         while (!(c->spi->SR & SPI_SR_TXE)) {
         }
         *(volatile uint8_t *)&c->spi->DR = image[i - 1];
+    }
+    /* RM0410: drain TX FIFO before checking BSY. TXE means space is
+     * available, not that every queued byte has reached the shift chain. */
+    while (c->spi->SR & SPI_SR_FTLVL) {
     }
     while (c->spi->SR & SPI_SR_BSY) {
     }

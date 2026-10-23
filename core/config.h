@@ -6,8 +6,8 @@
 
 #ifndef FW_VERSION_MAJOR
 #define FW_VERSION_MAJOR 0
-#define FW_VERSION_MINOR 4
-#define FW_VERSION_PATCH 0
+#define FW_VERSION_MINOR 6
+#define FW_VERSION_PATCH 1
 #endif
 #define FW_MODEL "CONTR"
 #define FW_VENDOR "TESTDUT"
@@ -22,13 +22,14 @@
 #define CS_LOAD_ON_SR 1         /* SR0.2.B */
 #define CS_ACTIVE_LOW 1
 #define PWRON_RSP_ON_LEVEL 0
+#define SR0_LOOP_PRESENT 0     /* Loop wire SR0.2.E -> PB7 is not installed. */
 #define SR1_LOOP_PRESENT 0
 #define RELAY_BREAK_MS 20
-#define PSU_VMIN 42
-#define PSU_VMAX 52
+#define PSU_VMIN 40
+#define PSU_VMAX 54
 #define PSU_DAC_MIN 0           /* ОТКРЫТО-1 */
-#define PSU_DAC_MAX 4095        /* ОТКРЫТО-1 */
-#define DCOK_ACTIVE_HIGH 1      /* ОТКРЫТО-1 */
+#define PSU_DAC_MAX 65535        /* ОТКРЫТО-1 */
+#define DCOK_ACTIVE_HIGH 0      /* RSP-2000 CN501.5: low = output healthy. */
 #define ALARM_ACTIVE_HIGH 1     /* ОТКРЫТО-1 */
 #define DCOK_RISE_TIMEOUT_MS 2000 /* ОТКРЫТО-1 */
 #define DCOK_FALL_TIMEOUT_MS 2000 /* ОТКРЫТО-1 */
@@ -60,7 +61,7 @@
 #define BUTTON_RESET_HOLD_MS 5000
 #define UPD_CONFIRM_TIMEOUT_MS 60000
 #define UPD_BLOCK_MAX_B 256
-#define UPD_MIN_VERSION "0.2.0"
+#define UPD_MIN_VERSION "0.6.1"
 #define LOG_DEPTH 256
 #define OPT_NDBANK 0
 #define OPT_NDBOOT 0
@@ -78,6 +79,7 @@
     X(CS_LOAD_ON_SR)                                        \
     X(CS_ACTIVE_LOW)                                        \
     X(PWRON_RSP_ON_LEVEL)                                   \
+    X(SR0_LOOP_PRESENT)                                     \
     X(SR1_LOOP_PRESENT)                                     \
     X(RELAY_BREAK_MS)                                       \
     X(PSU_VMIN)                                             \

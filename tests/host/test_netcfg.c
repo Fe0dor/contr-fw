@@ -4,6 +4,7 @@
 #include "check.h"
 #include "config.h"
 #include "netcfg.h"
+#include "errlog.h"
 
 static void test_mac_from_uid(void)
 {
@@ -104,8 +105,32 @@ static void test_button_reset(void)
     CHECK(cfg_get_net(&n) && n.addr == 0xC0A80014u && n.dhcp == 0);
 }
 
+static void test_button_write_failure(void)
+{
+    device_boot();
+    struct cfg_net n={0,0x0a141e28u,0xffffff00u,0x0a141e01u}, stored;
+    CHECK(cfg_set_net(&n)==0);
+    host_cfg_fail_writes(1);
+    host_set_button(true);
+    device_run(1);
+    host_advance_ms(BUTTON_RESET_HOLD_MS);
+    device_run(1);
+    CHECK(!host_reset_requested());
+    CHECK(cfg_get_net(&stored) && stored.addr==n.addr);
+    CHECK(err_count()==1);
+    host_advance_ms(BUTTON_RESET_HOLD_MS);
+    device_run(4);
+    CHECK(err_count()==1); /* one attempt per press, no error/log flood */
+    host_set_button(false);device_run(1);
+    host_cfg_fail_writes(1);
+    host_set_button(true);device_run(1);
+    host_advance_ms(BUTTON_RESET_HOLD_MS);device_run(1);
+    CHECK(err_count()==2);
+}
+
 int main(void)
 {
+    test_button_write_failure();
     test_mac_from_uid();
     test_parse();
     test_prov_net_and_status();

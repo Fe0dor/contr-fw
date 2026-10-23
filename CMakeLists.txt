@@ -5,9 +5,19 @@ cmake_minimum_required(VERSION 3.25)
 #   host   — логика core/ с заглушками hal/host: тесты ctest и процесс contr-host
 #            для прогонщика диалогов (пресет `host`).
 # Версия проекта — версия прошивки (*IDN?, заголовок образа).
-project(contr_fw VERSION 0.4.0 LANGUAGES C ASM)
+project(contr_fw VERSION 0.6.4 LANGUAGES C ASM)
 
 option(CONTR_HIL_HANG_AFTER_INIT "HIL ONLY: hang after boot check to test watchdog rollback" OFF)
+
+option(CONTR_HIL_HANG_BEFORE_HAL "HIL ONLY: hang after trial bookkeeping before HAL initialization" OFF)
+if(CONTR_HIL_HANG_BEFORE_HAL)
+    add_compile_definitions(CONTR_HIL_HANG_BEFORE_HAL=1)
+endif()
+
+option(CONTR_HIL_COMPACT_ON_BOOT "HIL ONLY: compact CFG once during trial startup" OFF)
+if(CONTR_HIL_COMPACT_ON_BOOT)
+    add_compile_definitions(CONTR_HIL_COMPACT_ON_BOOT=1)
+endif()
 
 option(CONTR_BRINGUP "Наладочная сборка с командами DBG:* (план 22, шаг 1)" OFF)
 
@@ -46,6 +56,8 @@ set(CORE_SOURCES
     core/safe.c
     core/relays.c
     core/sections.c
+    core/dut.c
+    core/psu.c
     core/sr.c
     core/signals.c
     core/dbg.c
@@ -151,6 +163,10 @@ else()
     target_include_directories(test_sections_ready PRIVATE tests/host)
     target_link_libraries(test_sections_ready PRIVATE contr_core_pwrok contr_hal_mem)
     add_test(NAME test_sections_ready COMMAND test_sections_ready)
+    add_executable(test_dut_ready tests/dut_ready.c)
+    target_include_directories(test_dut_ready PRIVATE tests/host)
+    target_link_libraries(test_dut_ready PRIVATE contr_core_pwrok contr_hal_mem)
+    add_test(NAME test_dut_ready COMMAND test_dut_ready)
     file(GLOB TEST_SOURCES CONFIGURE_DEPENDS tests/host/test_*.c)
     foreach(src IN LISTS TEST_SOURCES)
         get_filename_component(name ${src} NAME_WE)

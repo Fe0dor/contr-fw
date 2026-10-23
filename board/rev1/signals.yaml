@@ -27,7 +27,7 @@ signals:
   - {name: PWROK3,    address: PD13, dir: in,  pull: up}
   - {name: PWROK4,    address: PB2,  dir: in,  pull: up,   note: "готовность секции A; полярность ОТКРЫТО-5"}
   - {name: PWROK5,    address: PE10, dir: in,  pull: up,   note: "готовность секции B"}
-  - {name: RSP_DC_OK, address: PG12, dir: in,  pull: none, note: "через ADuM7441; полярность ОТКРЫТО-1"}
+  - {name: RSP_DC_OK, address: PG12, dir: in,  pull: up, note: "через ADuM7441; 0 = DC-OK, подтяжка к неактивному уровню"}
   - {name: RSP_ALARM, address: PG10, dir: in,  pull: none, note: "перегрев RSP; полярность ОТКРЫТО-1"}
   # --- служебные ---
   - {name: SR_TEST_IN, address: PB7, dir: in,  pull: down, note: "петля самопроверки SR0, приход SR0.2.E; вывод LD2"}

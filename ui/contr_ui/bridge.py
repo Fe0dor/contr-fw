@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import copy
 import json
+import os
 import queue
 import threading
 import time
@@ -64,6 +65,9 @@ class Bridge:
                    "kind": kind, "text": text, **extra}
             self.events.append(row)
             self.log.write(json.dumps(row, ensure_ascii=False) + "\n")
+            if kind == "tx" and not text.split(" ", 1)[0].endswith("?"):
+                self.log.flush()
+                os.fsync(self.log.fileno())  # persist intent before touching hardware
 
     def snapshot(self, since=0):
         with self.lock:
@@ -171,7 +175,7 @@ class Bridge:
         self.previous_log = []
         with self.lock:
             self.state.update(connected=True, channel=link.label, target=self.target, last_error="",
-                              generation=None, replies={}, relays=[], commands=list(COMMANDS), safe_acknowledged=False, section_supported=False)
+                              generation=None, replies={}, relays=[], commands=list(COMMANDS), safe_acknowledged=False, section_supported=False, dut_supported=False, psu_supported=False, psu_cal_supported=False)
         self.event("system", "Подключено: " + link.label)
 
     def _close(self, reason):
@@ -193,14 +197,32 @@ class Bridge:
                     pass
             if body.startswith("ERR:"):
                 self.state["last_error"] = body
+                if command == "SAFE" or body.startswith(("ERR:NOT_SAFE", "ERR:PSU_FAULT")):
+                    self.state["safe_acknowledged"] = False
                 return
             if command == "SAFE":
                 self.state["safe_acknowledged"] = body == "OK"
                 if body == "OK":
                     self.state["replies"]["ROUT:STAT?"] = ""
                     self.state["replies"].pop("RES:STAT?", None)
-            elif not command.split(" ", 1)[0].endswith("?"):
+                    self.state["replies"].pop("DUT:STAT?", None)
+                    self.state["replies"].pop("PSU:STAT?", None)
+            elif not command.split(" ", 1)[0].endswith("?") and command.split(" ",1)[0] not in {"PSU:CAL:SET","PSU:CAL:SAVE","PSU:CAL:LOAD"}:
                 self.state["safe_acknowledged"] = False
+            if command == "SYST:SAFE?" and "FAIL" in body.split(",")[2:8]:
+                self.state["safe_acknowledged"] = False
+            if command == "PSU:CAL?":
+                self.state["psu_cal_supported"] = True
+            if command == "PSU:STAT?":
+                self.state["psu_supported"] = True
+                previous=self.state["replies"].get(command,"").split(",")[0]
+                current=body.split(",")[0]
+                if current!=previous and ":PSU_" in current:
+                    self.event("error","БП RSP: "+current.split(":",1)[1],report=body)
+            if command == "DUT:STAT?":
+                self.state["dut_supported"] = True
+                if ";INTERVENTION,1;" in body:
+                    self.event("manual", "Ручное вмешательство на линиях изделия", report=body)
             if command == "RES:STAT?":
                 self.state["section_supported"] = True
             if command.endswith("?"):
@@ -222,7 +244,7 @@ class Bridge:
                 continue
             if reply is None:
                 raise ConnectionError("Устройство закрыло соединение")
-            if not reply:
+            if not reply and not (isinstance(self.link, SerialLink) and current == "ROUT:STAT?"):
                 continue
             if reply == "ERR:BUSY" and isinstance(self.link, TcpLink):
                 self.event("error", "BUSY: устройство занято другим клиентом")
@@ -290,7 +312,7 @@ class Bridge:
         return reply
 
     def _refresh(self):
-        for cmd in ("*IDN?", "SYST:NET?", "SYST:SAFE?", "TEST:ALL?", "SYST:CONF?", "INTERLOCK:LIST?", "SYST:UPD:STAT?", "ROUT:STAT?", "RES:STAT?"):
+        for cmd in ("*IDN?", "SYST:NET?", "SYST:SAFE?", "TEST:ALL?", "SYST:CONF?", "INTERLOCK:LIST?", "SYST:UPD:STAT?", "ROUT:STAT?", "RES:STAT?", "DUT:STAT?", "PSU:STAT?", "PSU:CAL?"):
             if self.urgent.is_set():
                 self.urgent.clear()
                 self._exchange("SAFE")
@@ -428,6 +450,12 @@ class Bridge:
                     try:
                         # Both live panels refresh each configured interval (MI-111).
                         self._exchange("ROUT:STAT?", background=True)
+                        if self.state.get("psu_supported"):
+                            self._exchange("PSU:STAT?", background=True)
+                        if self.state.get("psu_cal_supported"):
+                            self._exchange("PSU:CAL?", background=True)
+                        if self.state.get("dut_supported"):
+                            self._exchange("DUT:STAT?", background=True)
                         if self.state.get("section_supported"):
                             self._exchange("RES:STAT?", background=True)
                         self._exchange(cmd, background=True)

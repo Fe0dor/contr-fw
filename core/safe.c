@@ -3,11 +3,14 @@
 #include <string.h>
 
 #include "config.h"
+#include "cfg.h"
 #include "core.h"
 #include "errlog.h"
 #include "hal.h"
 #include "signals.h"
 #include "sections.h"
+#include "dut.h"
+#include "psu.h"
 #include "sr.h"
 
 struct desired desired;
@@ -35,15 +38,10 @@ const char *safe_step_name(enum safe_step_result r)
     }
 }
 
-/* Шаг 1: оба БП выключить, код ЦАП в минимум. Модуль БП — шаг 6 плана: пока выводы. */
+/* Шаг 1: оба БП выключить, код ЦАП в минимум. */
 static enum safe_step_result step_psu_off(void)
 {
-    signal_set(SIG_PWRON_RSP, false);
-    signal_set(SIG_HLG, false);
-    desired.psu_rsp_on = false;
-    desired.psu_hlg_on = false;
-    desired.psu_dac = PSU_DAC_MIN;
-    return STEP_OK;
+    return psu_safe_off() ? STEP_OK : STEP_FAILED;
 }
 
 /* Шаг 2: последовательность гашения контроллеру нагрузок — модуль loads, шаг 7 плана. */
@@ -57,19 +55,14 @@ static enum safe_step_result step_loads_off(void)
 /* Шаг 3: снять линии C*. */
 static enum safe_step_result step_dut_off(void)
 {
-    for (int i = 0; i < SIGNAL_COUNT; i++) {
-        if (signal_table[i].dir == SIGNAL_DUT) {
-            signal_set((enum signal_id)i, false);
-        }
-    }
-    desired.dut_lines = 0;
+    dut_off_all();
     return STEP_OK;
 }
 
-/* Шаг 4: дождаться снятия DC-OK — модуль БП, шаг 6 плана: выход не включался. */
+/* Шаг 4: ожидание снятия DC-OK ограничено временем; остальные шаги идут и при ошибке. */
 static enum safe_step_result step_dcok_fall(void)
 {
-    return STEP_OK;
+    return psu_wait_dcok_off() ? STEP_OK : STEP_FAILED;
 }
 
 /* Шаг 5: реле выключить — сначала L*, затем остальные. */
@@ -117,6 +110,7 @@ bool safe_enter(enum safe_reason reason)
     }
     rep->duration_ms = hal_millis() - t0;
     observed.in_safe_state = true;
+    cfg_set_erase_allowed(rep->complete);
     observed.generation++;
     log_event("SAFE %s %s %lu ms", safe_reason_name(reason), rep->complete ? "OK" : "INCOMPLETE",
               (unsigned long)rep->duration_ms);

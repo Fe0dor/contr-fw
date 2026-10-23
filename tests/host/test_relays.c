@@ -2,6 +2,14 @@
 #include "config.h"
 #include "relays.h"
 #include "sr.h"
+/* A background LD2 heartbeat is permitted; relay/shift-register writes are not. */
+static bool no_control_writes(void) {
+    for(size_t i=0;i<host_journal_count();i++) {
+        const char *entry=host_journal_at(i);
+        if(strcmp(entry,"gpio_write PB7 0") && strcmp(entry,"gpio_write PB7 1")) return false;
+    }
+    return true;
+}
 static void tick(void) { host_advance_ms(1); }
 static void boot(void) { device_boot(); host_net_set_poll_hook(tick); }
 static void clean(void) { CHECK_STR(con_cmd("ROUT:LOW:ALL"), "OK"); host_journal_clear(); }
@@ -16,27 +24,41 @@ static void all_names(void) {
         CHECK_STR(con_cmd(cmd),"OK"); CHECK_STR(con_cmd("ROUT:STAT?"),relay_table[i].name);
         for(int j=0;j<RELAY_COUNT;j++) CHECK(physical(&relay_table[j]) == (i==j));
         CHECK(sr_image_get(0,SR0_CS_LOAD_REG,SR0_CS_LOAD_BIT));
-        host_journal_clear();CHECK_STR(con_cmd(cmd),"OK");CHECK(host_journal_count()==0);
+        host_journal_clear();CHECK_STR(con_cmd(cmd),"OK");CHECK(no_control_writes());
         clean(); for(int j=0;j<RELAY_COUNT;j++) CHECK(!physical(&relay_table[j]));
     }
-    CHECK_STR(con_cmd("rout:high m4,v1.1,m4"),"OK");CHECK_STR(con_cmd("ROUT:STAT?"),"V1.1,M4");
-    host_journal_clear(); CHECK_STR(con_cmd("ROUT:HIGH L1,M99"),"ERR:RANGE");CHECK(host_journal_count()==0);
+    CHECK_STR(con_cmd("rout:high m4,v1.1"),"OK");CHECK_STR(con_cmd("ROUT:STAT?"),"V1.1,M4");
+    host_journal_clear(); CHECK_STR(con_cmd("ROUT:HIGH L1,M99"),"ERR:RANGE");CHECK(no_control_writes());
     CHECK_STR(con_cmd("ROUT:SET M5,"),"ERR:RANGE");CHECK_STR(con_cmd("ROUT:STAT?"),"V1.1,M4");
     CHECK_STR(con_cmd("ROUT:SET"),"OK");CHECK_STR(con_cmd("ROUT:STAT?"),"");
     CHECK_STR(con_cmd("ROUT:HIGH L1,L2,L3,L4,L5,PM1,PM2,PM3,CH2.1"),"OK");
     CHECK_STR(con_cmd("SAFE"),"OK");CHECK_STR(con_cmd("ROUT:STAT?"),"");
+}
+static void duplicates(void) {
+    boot();
+    CHECK_STR(con_cmd("ROUT:HIGH M4"), "OK");
+    const char *commands[] = {"ROUT:HIGH V1.1,v1.1", "ROUT:LOW M4,m4", "ROUT:SET M5,m5"};
+    for (unsigned i=0; i<sizeof commands/sizeof commands[0]; ++i) {
+        struct desired before=desired;
+        uint32_t generation=observed.generation;
+        host_journal_clear();
+        CHECK_STR(con_cmd(commands[i]), "ERR:RANGE");
+        CHECK(memcmp(&before,&desired,sizeof before)==0);
+        CHECK(observed.generation==generation);
+        CHECK(no_control_writes());
+    }
 }
 static void all_pairs(void) {
     boot(); char cmd[128];
     for(int i=0;i<RELAY_COUNT;i++) for(int j=i+1;j<RELAY_COUNT;j++) {
         if(!(relay_table[i].group_mask & relay_table[j].group_mask)) continue;
         clean();snprintf(cmd,sizeof cmd,"ROUT:HIGH %s,%s",relay_table[i].name,relay_table[j].name);
-        CHECK_PREFIX(con_cmd(cmd),"ERR:INTERLOCK,");CHECK(host_journal_count()==0);
+        CHECK_PREFIX(con_cmd(cmd),"ERR:INTERLOCK,");CHECK(no_control_writes());
         CHECK_STR(con_cmd("ROUT:STAT?"),"");
     }
     clean(); CHECK_STR(con_cmd("ROUT:HIGH M4"),"OK");host_journal_clear();
     CHECK_STR(con_cmd("ROUT:HIGH V1.1,M5"),"ERR:INTERLOCK,M__M4__M5,M4,M5");
-    CHECK(host_journal_count()==0);CHECK_STR(con_cmd("ROUT:STAT?"),"M4");
+    CHECK(no_control_writes());CHECK_STR(con_cmd("ROUT:STAT?"),"M4");
     CHECK(tcp_connect()); CHECK(strstr(tcp_cmd("ROUT:HIGH M4"),";OK"));
     CHECK_STR(con_cmd("ROUT:HIGH M5"),"ERR:BUSY");
     CHECK(strstr(tcp_cmd("ROUT:HIGH M5"),";ERR:INTERLOCK,M__M4__M5,M4,M5"));
@@ -93,7 +115,7 @@ static void diagnostic_preserves(void) {
     boot();CHECK_STR(con_cmd("ROUT:HIGH M4,V1.1,CH1.1,D1_G1,L1"),"OK");
     struct desired before=desired;
     host_journal_clear();
-    CHECK_PREFIX(con_cmd("TEST:ALL?"),"WARN;SR0:OK;SR1:UNVERIFIED;");CHECK(memcmp(&before,&desired,sizeof desired)==0);
+    CHECK_PREFIX(con_cmd("TEST:ALL?"),"WARN;SR0:SKIPPED;SR1:UNVERIFIED;");CHECK(memcmp(&before,&desired,sizeof desired)==0);
     for(int i=0;i<RELAY_COUNT;i++)CHECK(physical(&relay_table[i])==relays_bit(desired.relays,relay_table[i].number));
     unsigned shifts=0,latches=0;
     for(size_t i=0;i<host_journal_count();i++) {
@@ -106,12 +128,13 @@ static void diagnostic_preserves(void) {
             shifts++;
         } else { CHECK_STR(line,"sr_latch 0");latches++; }
     }
-    CHECK(shifts==3 && latches==3);
-    /* A stuck low AND a stuck high loop must fail; original test bit restored. */
+    CHECK(shifts==0 && latches==0);
+    /* Disabled loop: neither stuck level causes failure or shifts SR outputs. */
     host_sr_loop_broken(true);
     for(int level=0;level<2;level++){
-        host_gpio_set_input(1,7,level!=0);CHECK_PREFIX(con_cmd("TEST:ALL?"),"FAIL;SR0:FAIL;");
+        host_gpio_set_input(1,7,level!=0);CHECK_PREFIX(con_cmd("TEST:ALL?"),"WARN;SR0:SKIPPED;");
         CHECK(memcmp(&before,&desired,sizeof desired)==0);
+        CHECK(no_control_writes());
     }
     sr_image_set(0,2,4,true);sr_write(0);host_sr_loop_broken(false);CHECK(sr_test_loop());CHECK(sr_image_get(0,2,4));
     /* CS_LOAD changes preserve every relay bit on both transitions. */
@@ -120,4 +143,17 @@ static void diagnostic_preserves(void) {
         for(int i=0;i<RELAY_COUNT;i++)CHECK(physical(&relay_table[i])==relays_bit(desired.relays,relay_table[i].number));
     }
 }
-int main(void){all_names();all_pairs();break_order();abort_switch();diagnostic_preserves();return test_result("relays");}
+static void a3_qa_image(void) {
+    boot(); clean();
+    CHECK_STR(con_cmd("ROUT:HIGH A3"), "OK");
+    /* Independent wiring expectation, not derived from relay_table. Bit 1
+     * stays high because active-low CS_LOAD must remain deasserted. */
+    CHECK(host_sr_oe_active(0));
+    CHECK(host_sr_outputs(0)[0] == 0x00);
+    CHECK(host_sr_outputs(0)[1] == 0x00);
+    CHECK(host_sr_outputs(0)[2] == 0x03);
+    CHECK(!host_pin(4,3)->level); /* V3.6 remains off. */
+    CHECK_STR(con_cmd("ROUT:LOW A3"), "OK");
+    CHECK(host_sr_outputs(0)[2] == 0x02);
+}
+int main(void){all_names();duplicates();all_pairs();break_order();abort_switch();diagnostic_preserves();a3_qa_image();return test_result("relays");}

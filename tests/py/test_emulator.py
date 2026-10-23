@@ -21,7 +21,7 @@ def test_emulator_contract_nonblocking_read() -> None:
         emu.read(timeout_s=0)
     emu.write(b"*IDN?\n")
     reply = emu.read(timeout_s=0)
-    assert reply.startswith(b"G1;TESTDUT,CONTR-R1,UNPROVISIONED,0.4.0\n")
+    assert reply.startswith(b"G1;TESTDUT,CONTR-R1,UNPROVISIONED,0.6.1\n")
     with pytest.raises(TimeoutError):
         emu.read(0)
 
@@ -56,11 +56,11 @@ def test_console_arbitration_and_generation() -> None:
 def test_update_cycle() -> None:
     dev = Device()
     img = bytearray(b"\xff" * 1024)
-    hdr = b"CONTRFW1" + b"CONTR\0\0\0" + bytes([1, 0, 3, 0]) + (1024).to_bytes(4, "little") + b"\xff" * 12
+    hdr = b"CONTRFW1" + b"CONTR\0\0\0" + bytes([1, 0, 6, 1]) + (1024).to_bytes(4, "little") + b"CFG2" + b"\xff" * 8
     img[:8] = (0x20080000).to_bytes(4, "little") + (0x08000225).to_bytes(4, "little")
     img[0x200:0x200 + len(hdr)] = hdr
     crc = zlib.crc32(bytes(img)) & 0xFFFFFFFF
-    assert dev.execute("console", f"SYST:UPD:BEGIN 1024,{crc:08x},0.4.0") == "OK"
+    assert dev.execute("console", f"SYST:UPD:BEGIN 1024,{crc:08x},0.6.1") == "OK"
     import base64
     for off in range(0, 1024, 256):
         block = base64.b64encode(bytes(img[off:off + 256])).decode()
@@ -83,7 +83,7 @@ def test_update_cycle() -> None:
 def test_conf_and_errors() -> None:
     dev = Device()
     conf = dev.execute("console", "SYST:CONF?")
-    assert conf.count("=") == 50
+    assert conf.count("=") == 51
     assert "NET_DEFAULT_ADDR=192.168.0.20;" in conf
     assert dev.execute("console", "FOO") == "ERR:UNKNOWN_CMD"
     assert dev.execute("console", "SYST:ERR?") == "UNKNOWN_CMD"

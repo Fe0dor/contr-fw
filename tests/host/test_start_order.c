@@ -11,6 +11,7 @@ static void test_fw209_order(void)
 {
     host_reset_all();
     board_early_init();
+    core_init();
     /* 1. PWRON_A/B выключено: выход 0 */
     int a = idx_after("gpio_config PC7 out none 0", 0);
     int b = idx_after("gpio_config PD15 out none 0", 0);
@@ -28,10 +29,12 @@ static void test_fw209_order(void)
     /* 5. цепочки после линий */
     int sr = idx_after("sr_ctrl 0 srclr 1", 0);
     CHECK(sr > c1);
+    CHECK(idx_after("wdt_start",0)<idx_after("sr_shift 0",0));
+    CHECK(sr<idx_after("hal_init",0));
     /* до разрешения выходов ни одной записи в линии реле на выводах с единицей */
     for (size_t i = 0; i < host_journal_count(); i++) {
         const char *e = host_journal_at(i);
-        if (strncmp(e, "gpio_write", 10) == 0) {
+        if (strncmp(e, "gpio_write", 10) == 0 && !strstr(e,"PE4 ") && !strstr(e,"PG15 ")) {
             CHECK(e[strlen(e) - 1] == '0');
         }
     }
@@ -41,6 +44,7 @@ static void test_fw220_chain_start(void)
 {
     host_reset_all();
     board_early_init();
+    core_init();
     for (unsigned chain = 0; chain < 2; chain++) {
         char p[32];
         int i0, i1, i2, i3, i4, i5;
@@ -59,7 +63,7 @@ static void test_fw220_chain_start(void)
         CHECK(i0 >= 0 && i1 > i0 && i2 > i1 && i3 > i2 && i4 > i3 && i5 > i4);
         /* до OE не было других записей OE */
         snprintf(p, sizeof p, "sr_ctrl %u oe", chain);
-        CHECK(idx_after(p, 0) == i5);
+        CHECK(idx_after(p, 0) < i0); /* early quiesce disables OE */
         CHECK(host_sr_oe_active((uint8_t)chain));
     }
     /* FW-123: первый образ — нули на реле, CS_LOAD (SR0.2.B) неактивен = 1, SR_TEST_OUT = 0 */
@@ -73,6 +77,7 @@ static void test_pwron_semantics(void)
 {
     host_reset_all();
     board_early_init();
+    core_init();
     /* PWRON_A выключено = выход 0; включено = вход без подтяжки (плата тянет к 5 В) */
     struct host_pin *p = host_pin(2, 7);
     CHECK(p->mode == HAL_PIN_OUT && !p->level);

@@ -1,6 +1,6 @@
 {
-  "table_version": "rev1.1",
-  "checksum": "sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70",
+  "table_version": "rev1.3",
+  "checksum": "sha256:b54e0456aeb03d2fde289f7125e61d6eb0d5f75ffac97eb522c65bff24d37290",
   "relays": [
     {
       "name": "V1.1",
@@ -186,7 +186,7 @@
       "name": "V3.6",
       "number": 21,
       "block": "mux",
-      "address": "SR0.2.A",
+      "address": "PE3",
       "groups": [
         "V"
       ]
@@ -460,7 +460,7 @@
       "name": "A3",
       "number": 51,
       "block": "mux",
-      "address": "PE3",
+      "address": "SR0.2.A",
       "groups": [
         "A"
       ]
@@ -959,7 +959,7 @@
       "name": "RSP_DC_OK",
       "address": "PG12",
       "dir": "in",
-      "pull": "none",
+      "pull": "up",
       "init": null
     },
     {

@@ -1,0 +1,61 @@
+{
+  "update": {
+    "image": "C:\\Users\\user\\Documents\\Projects\\contr-fw\\build\\target\\contr-fw.upd",
+    "sha256": "b099bbfaa91cabd380361e2c20da838b94cab4e4313e8597e5b59daf2a972f80",
+    "size": 69620,
+    "crc32": "56F3900A",
+    "mode": "confirm",
+    "before *IDN?": "G12;TESTDUT,CONTR-R1,UNPROVISIONED,0.5.0",
+    "before ROUT:STAT?": "G12;",
+    "before RES:STAT?": "G12;A:OFF;B:OFF;R1,POT,?;R1,MTX,?;R2,POT,?;R2,POTH,?;R2,MTX,?;R3,POT,?;R3,MTX,?;R4,POT,?;R4,POTH,?;R4,MTX,?",
+    "job": {
+      "kind": "update",
+      "status": "done",
+      "progress": 100,
+      "message": "Обновление подтверждено",
+      "deadline": null
+    },
+    "elapsed": 24.79700000002049,
+    "after *IDN?": "G1;TESTDUT,CONTR-R1,UNPROVISIONED,0.6.0",
+    "after SYST:UPD:STAT?": "G1;CONFIRMED,0,0",
+    "after ROUT:STAT?": "G1;",
+    "after RES:STAT?": "G1;A:OFF;B:OFF;R1,POT,?;R1,MTX,?;R2,POT,?;R2,POTH,?;R2,MTX,?;R3,POT,?;R3,MTX,?;R4,POT,?;R4,POTH,?;R4,MTX,?",
+    "after SYST:NET?": "G1;static,02:88:49:85:68:CC,192.168.0.20,UP",
+    "after SYST:LOG?": "G1;0,update: trial run bank 2;0,reset: software;8964,client connected;10964,RSP PSU_FAULT DCOK stuck;10964,SAFE CONNECT INCOMPLETE 2000 ms;10989,update: confirmed"
+  },
+  "checks": {
+    "PSU:STAT?": {
+      "reply": "G2;OFF:PSU_FAULT,OFF,42,0,1,1"
+    },
+    "PSU:OUTP RSP,OFF": {
+      "reply": "G1;OK"
+    },
+    "PSU:OUTP HLG,OFF": {
+      "reply": "G1;OK"
+    },
+    "PSU:VOLT 42": {
+      "reply": "G1;OK"
+    },
+    "PSU:VOLT 53": {
+      "reply": "G1;ERR:RANGE,42..52"
+    },
+    "SYST:SAFE?": {
+      "reply": "G2;2,SAFE,OK,SILENT,OK,FAIL,OK,OK,2000"
+    },
+    "ROUT:STAT?": {
+      "reply": "G2;"
+    },
+    "DUT:STAT?": {
+      "reply": "G2;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    "RES:STAT?": {
+      "reply": "G2;A:OFF;B:OFF;R1,POT,?;R1,MTX,?;R2,POT,?;R2,POTH,?;R2,MTX,?;R3,POT,?;R3,MTX,?;R4,POT,?;R4,POTH,?;R4,MTX,?"
+    },
+    "TEST:ALL?": {
+      "reply": "G2;FAIL;SR0:FAIL;SR1:UNVERIFIED;I2C_A:SKIP,OFF;I2C_B:SKIP,OFF;DCOK:1;ALARM:1;LOADBOARD:LINK_LOST;INTERLOCK:sha256:968891d679c902bc09aecebc42f84bc055cf5c80b4795240e6b5176b0936bd70;PROV:UNPROVISIONED;OPTBYTES:OK;NET:static,192.168.0.20,UP;RESET:SOFTWARE;SAFE:SAFE_INCOMPLETE"
+    },
+    "SYST:LOG?": {
+      "reply": "G2;0,update: trial run bank 2;0,reset: software;8964,client connected;10964,RSP PSU_FAULT DCOK stuck;10964,SAFE CONNECT INCOMPLETE 2000 ms;10989,update: confirmed;65412,PSU:VOLT ERR:RANGE;67539,RSP PSU_FAULT DCOK stuck;67539,SAFE SAFE INCOMPLETE 2000 ms;67539,SAFE ERR:SAFE_INCOMPLETE"
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "image": "C:\\Users\\user\\Documents\\Projects\\contr-fw\\build\\target\\contr-fw.upd",
+  "sha256": "432f3bcc1cdecda415cf15637e3c2db87a34a7935fa63ebfcad913cbdcac9c9c",
+  "size": 65816,
+  "crc32": "BE6B9008",
+  "mode": "confirm",
+  "before *IDN?": "G8;TESTDUT,CONTR-R1,UNPROVISIONED,0.4.0",
+  "before ROUT:STAT?": "G8;",
+  "before RES:STAT?": "G8;A:OFF;B:OFF;R1,POT,?;R1,MTX,?;R2,POT,?;R2,POTH,?;R2,MTX,?;R3,POT,?;R3,MTX,?;R4,POT,?;R4,POTH,?;R4,MTX,?",
+  "job": {
+    "kind": "update",
+    "status": "done",
+    "progress": 100,
+    "message": "Обновление подтверждено",
+    "deadline": null
+  },
+  "elapsed": 22.75,
+  "after *IDN?": "G1;TESTDUT,CONTR-R1,UNPROVISIONED,0.4.1",
+  "after SYST:UPD:STAT?": "G1;CONFIRMED,0,0",
+  "after ROUT:STAT?": "G1;",
+  "after RES:STAT?": "G1;A:OFF;B:OFF;R1,POT,?;R1,MTX,?;R2,POT,?;R2,POTH,?;R2,MTX,?;R3,POT,?;R3,MTX,?;R4,POT,?;R4,POTH,?;R4,MTX,?",
+  "after SYST:NET?": "G1;static,02:88:49:85:68:CC,192.168.0.20,UP",
+  "after SYST:LOG?": "G1;0,update: trial run bank 1;0,reset: software;8891,client connected;8891,SAFE CONNECT OK 0 ms;8926,update: confirmed"
+}

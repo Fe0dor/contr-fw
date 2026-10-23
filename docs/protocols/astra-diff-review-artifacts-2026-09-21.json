@@ -1,0 +1,16 @@
+{
+  "target": {
+    "version": "0.6.0",
+    "bytes": 70088,
+    "sha256": "27e0092c2258da08897df7b49b382ecc0a5f2257d67190efb8ae28dfd2f4d763",
+    "crc32": "DE807BBB",
+    "deployed": false
+  },
+  "bringup": {
+    "version": "0.6.0",
+    "bytes": 72728,
+    "sha256": "ce948dc21c2dc6e46d9416ac53dc8aeb1cff6f116b5d873d3a4e6bec274d43d2",
+    "crc32": "1CB4E1BE",
+    "deployed": false
+  }
+}

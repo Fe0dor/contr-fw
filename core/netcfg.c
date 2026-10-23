@@ -15,6 +15,7 @@ static bool dhcp_fallback_done;
 static uint32_t start_ms;
 static uint32_t button_down_since;
 static bool button_was_down;
+static bool button_attempted;
 
 void netcfg_mac_from_uid(const uint8_t uid[12], uint8_t out[6])
 {
@@ -131,6 +132,8 @@ void netcfg_start(void)
     };
     memcpy(hc.mac, mac, 6);
     hal_net_init(&hc);
+    button_was_down = false;
+    button_attempted = false;
     start_ms = hal_millis();
     dhcp_fallback_done = false;
 }
@@ -150,14 +153,19 @@ void netcfg_poll(void)
     bool down = hal_button_pressed();
     if (down && !button_was_down) {
         button_down_since = now;
+        button_attempted = false;
     }
-    if (down && (uint32_t)(now - button_down_since) >= BUTTON_RESET_HOLD_MS) {
+    if (down && !button_attempted && (uint32_t)(now - button_down_since) >= BUTTON_RESET_HOLD_MS) {
         struct cfg_net d;
         netcfg_defaults(&d);
-        log_event("USER 5s: net defaults, reset");
-        cfg_set_net(&d);
-        hal_reset();
-        button_down_since = now; /* хост: hal_reset возвращается */
+        button_attempted = true;
+        if (cfg_set_net(&d) == 0) {
+            log_event("USER 5s: net defaults, reset");
+            hal_reset();
+        } else {
+            err_push(ERR_UPD_SEQ, "net defaults: CFG write failed");
+            log_event("USER 5s: CFG write failed");
+        }
     }
     button_was_down = down;
 }
