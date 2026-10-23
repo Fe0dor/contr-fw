@@ -27,3 +27,12 @@
 /* Section codes and calibration measurements. */
 .section-element{display:grid;grid-template-columns:minmax(100px,1fr) 65px auto;gap:10px;align-items:end;padding:16px 0;border-bottom:1px solid var(--border,#e2e6ec)}
 .section-element label{display:grid;gap:6px;font-weight:600}.section-element input{width:100%}.section-current{grid-column:1/-1;font-size:12px;color:#556478}.section-reply{white-space:pre-wrap;padding:14px;background:#edf2f7;border-radius:8px;margin:16px 0}.calibration-card{margin-top:20px}.calibration-fields{display:flex;align-items:end;flex-wrap:wrap;gap:16px;margin:18px 0}.calibration-fields label{display:grid;gap:8px;flex:1;min-width:180px}.calibration-fields input,.calibration-fields select{width:100%}#cal-grid{flex-wrap:wrap}#cal-pending{padding:12px 0;color:#37516f}
+
+.dut-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}.dut-card{border:1px solid var(--border,#e2e8f0);border-radius:12px;padding:16px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px}.dut-card .button-row{width:100%}
+#dut-reply{overflow-wrap:anywhere}
+/* Keep navigation reachable in short windows without scrolling the page. */
+.sidebar{overflow:hidden}.sidebar>.brand,.sidebar>.nav-label,.sidebar>.sidebar-bottom{flex-shrink:0}.sidebar>nav{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#526e7e transparent;padding:3px;scroll-padding-block:3px}.sidebar>nav::-webkit-scrollbar{width:6px}.sidebar>nav::-webkit-scrollbar-thumb{background:#526e7e;border-radius:4px}
+
+#page-psu > .two-columns { margin-top: 20px; }
+
+.psu-cal-scroll{max-height:440px;overflow:auto;margin:16px 0}.psu-cal-scroll table{width:100%;border-collapse:collapse}.psu-cal-scroll th,.psu-cal-scroll td{padding:8px;text-align:left;border-bottom:1px solid var(--border,#ddd)}.psu-cal-scroll thead{position:sticky;top:0;background:var(--surface,#fff)}.psu-cal-scroll input{max-width:180px}#psu-cal-import{max-width:240px}

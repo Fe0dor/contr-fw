@@ -13,6 +13,8 @@ void hal_gpio_config(uint8_t port, uint8_t pin, enum hal_pin_mode mode, enum hal
     GPIO_TypeDef *g = target_port(port);
     uint32_t shift = 2u * pin;
     port_clock_on(port);
+    /* Release the output before changing its latch: a held DUT button may drive high. */
+    if (mode == HAL_PIN_IN) g->MODER &= ~(3u << shift);
     /* уровень выставляется до переключения в выход: без импульса на линии */
     g->BSRR = level ? (1u << pin) : (1u << (pin + 16u));
     g->PUPDR = (g->PUPDR & ~(3u << shift)) | ((uint32_t)pull << shift);

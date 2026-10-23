@@ -8,6 +8,10 @@ import zlib
 from dataclasses import dataclass
 
 COMMANDS = (
+    "PSU:CAL?", "PSU:CAL:SET", "PSU:CAL:SAVE", "PSU:CAL:LOAD", "PSU:CAL:MODE", "PSU:CAL:CODE",
+    "SYST:UPTIME?",
+    "PSU:OUTP", "PSU:VOLT", "PSU:STAT?",
+    "DUT:SET", "DUT:OFF:ALL", "DUT:STAT?",
     "RES:PWR", "RES:SET", "RES:STAT?",
     "ROUT:HIGH", "ROUT:LOW", "ROUT:SET", "ROUT:LOW:ALL", "ROUT:STAT?",
     "*IDN?", "SAFE", "SYST:SAFE?", "SYST:ERR?", "SYST:LOG?", "SYST:CONF?",
@@ -52,15 +56,17 @@ class UpdateImage:
 
     @classmethod
     def read(cls, data: bytes) -> "UpdateImage":
-        if not 0x224 <= len(data) <= 896 * 1024:
+        if not 0x224 <= len(data) <= 768 * 1024:
             raise ValueError("Размер образа вне допустимого диапазона")
-        magic, model, rev, a, b, c, size, *_ = struct.unpack_from("<8s8sBBBBI3I", data, 0x200)
+        magic, model, rev, a, b, c, size, layout, *_ = struct.unpack_from("<8s8sBBBBI3I", data, 0x200)
         if magic != b"CONTRFW1" or model.rstrip(b"\0") != b"CONTR" or rev != 1:
             raise ValueError("Неверный заголовок, модель или ревизия образа")
+        if layout != 0x32474643:
+            raise ValueError("Несовместимое размещение образа: требуется CFG2")
         if size != len(data):
             raise ValueError("Размер в заголовке не совпадает с файлом; выберите .upd")
-        if (a, b, c) < (0, 2, 0):
-            raise ValueError("Версия ниже минимальной 0.2.0")
+        if (a, b, c) < (0, 6, 1):
+            raise ValueError("Версия ниже минимальной 0.6.1")
         sp, reset = struct.unpack_from("<II", data)
         if not (0x20000000 < sp <= 0x20080000 and sp % 8 == 0
                 and reset & 1 and 0x08000224 <= (reset & ~1) <= 0x08000000 + len(data) - 2):

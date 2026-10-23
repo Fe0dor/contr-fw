@@ -14,25 +14,27 @@ import zlib
 from dataclasses import dataclass, field
 from pathlib import Path
 from .sections import Sections
+from .dut import Dut
+from .psu import Psu
 
 GEN = Path(__file__).resolve().parents[2] / "gen"
-VERSION = "0.4.0"
+VERSION = "0.6.1"
 VENDOR = "TESTDUT"
 MODEL = "CONTR"
 BOARD_REV = 1
 UPD_BLOCK_MAX_B = 256
 UPD_CONFIRM_TIMEOUT_MS = 60000
-UPD_MIN_VERSION = (0, 2, 0)
+UPD_MIN_VERSION = (0, 6, 1)
 DHCP_TIMEOUT_MS = 10000
 NET_DEFAULT = ("static", "192.168.0.20", "255.255.255.0", "192.168.0.100")
 LOG_DEPTH = 256
-IMAGE_MAX = (1024 - 128) * 1024
+IMAGE_MAX = 768 * 1024
 
 CONFIG = [
     ("BOARD_REV", "1"), ("PWRON_AB_ON_LEVEL", "1"), ("PWROK_PRESENT", "0"), ("PWROK_ACTIVE_LOW", "1"),
     ("PWROK_AB_ACTIVE_LOW", "1"), ("CS_LOAD_ON_SR", "1"), ("CS_ACTIVE_LOW", "1"), ("PWRON_RSP_ON_LEVEL", "0"),
-    ("SR1_LOOP_PRESENT", "0"), ("RELAY_BREAK_MS", "20"), ("PSU_VMIN", "42"), ("PSU_VMAX", "52"),
-    ("PSU_DAC_MIN", "0"), ("PSU_DAC_MAX", "4095"), ("DCOK_ACTIVE_HIGH", "1"), ("ALARM_ACTIVE_HIGH", "1"),
+    ("SR0_LOOP_PRESENT", "0"), ("SR1_LOOP_PRESENT", "0"), ("RELAY_BREAK_MS", "20"), ("PSU_VMIN", "40"), ("PSU_VMAX", "54"),
+    ("PSU_DAC_MIN", "0"), ("PSU_DAC_MAX", "65535"), ("DCOK_ACTIVE_HIGH", "0"), ("ALARM_ACTIVE_HIGH", "1"),
     ("DCOK_RISE_TIMEOUT_MS", "2000"), ("DCOK_FALL_TIMEOUT_MS", "2000"), ("SAFE_STATE_BUDGET_MS", "4000"),
     ("TCP_KEEPALIVE_IDLE_S", "10"), ("TCP_KEEPALIVE_INTVL_S", "5"), ("TCP_KEEPALIVE_CNT", "4"),
     ("DUT_POLL_MS", "10"), ("DUT_DEBOUNCE_MS", "30"), ("I2C_RETRIES", "3"), ("I2C_SPEED_HZ", "400000"),
@@ -78,6 +80,9 @@ class Device:
         self.numbers, self.plugin = load_tables()
         self.relays = {r["name"]: r for r in self.numbers["relays"]}
         self.now_ms = 0
+        self.dut = Dut(self, CommandError)
+        self.psu_cal_flash = None
+        self.psu = Psu(self, CommandError)
         self.generation = 0
         self.client_connected = False
         self.in_safe_state = True
@@ -107,7 +112,12 @@ class Device:
     # ---- служебное ----
 
     def advance(self, ms: int) -> None:
-        self.now_ms += ms
+        if ms < 0: raise ValueError("negative time")
+        end = self.now_ms + ms
+        while self.now_ms < end:
+            self.now_ms = min(end, self.now_ms + 10)
+            self.dut.poll()
+            self.psu.poll()
         if self.upd_state == "TRIAL" and self.now_ms - self.trial_started >= UPD_CONFIRM_TIMEOUT_MS:
             self.log_event("update: confirm timeout, rollback")
             self.boot_bank = 1 if self.active_bank == 2 else 2
@@ -125,14 +135,19 @@ class Device:
         del self.errors[:-16]
 
     def safe_enter(self, reason: str) -> bool:
-        self.safe = SafeReport(self.safe.seq + 1, reason, ["OK", "SILENT", "OK", "OK", "OK", "OK"], 0)
+        start=self.now_ms
+        psu_ok=self.psu.safe_off()
+        self.dut.off()
+        dcok_ok=self.psu.wait_off()
+        self.safe = SafeReport(self.safe.seq + 1, reason, ["OK" if psu_ok else "FAIL", "SILENT", "OK", "OK" if dcok_ok else "FAIL", "OK", "OK"], self.now_ms-start)
         self.relays_on.clear()
         self.sections.off(0)
         self.sections.off(1)
         self.in_safe_state = True
         self.generation += 1
-        self.log_event(f"SAFE {reason} OK 0 ms")
-        return True
+        complete="FAIL" not in self.safe.steps
+        self.log_event(f"SAFE {reason} {'OK' if complete else 'INCOMPLETE'} {self.safe.duration_ms} ms")
+        return complete
 
     def connect(self) -> bool:
         """Новое TCP-соединение: False — ERR:BUSY (второй клиент)."""
@@ -156,6 +171,13 @@ class Device:
         self.net = self.net_pending
         self.dhcp_fallback = False
         self.now_ms = 0
+        buttons = self.dut.buttons.copy()
+        self.dut = Dut(self, CommandError)
+        self.dut.buttons = buttons
+        external = self.psu.dcok_mode, self.psu.alarm, self.psu.dac_fail
+        self.psu = Psu(self, CommandError)
+        self.psu.dcok_mode, self.psu.alarm, self.psu.dac_fail = external
+        psu_ready = self.psu.safe_off()
         self.reset_cause = "SOFTWARE"
         self.log_event("reset: software")
         if self.trial_bank == self.active_bank and not self.trial_confirmed and self.trial_boot_count:
@@ -177,12 +199,23 @@ class Device:
         self.sections.off(1)
         self.in_safe_state = True
         self.safe = SafeReport(0, "RESET")
+        if not psu_ready:
+            self.safe.steps[0] = "FAIL"
 
     # ---- исполнение ----
 
     def execute(self, channel: str, line: str) -> str | None:
         """Одна строка → один кадр ответа без '\\n'; None для пустой строки."""
         line = line.strip("\r\n")
+        if line.startswith("#psu "):
+            _,signal,value=line.split()
+            self.psu.inject(signal.upper(),value.upper())
+            return None
+        if line.startswith("#button "):
+            _, name, level = line.split()
+            if level not in ("0", "1"): raise ValueError("button level")
+            self.dut.button(name, level == "1")
+            return None
         if line.startswith("#advance"):
             self.advance(int(line.split()[1]))
             return None
@@ -201,11 +234,11 @@ class Device:
         prefix = f"G{self.generation};" if channel == "tcp" else ""
         return prefix + body
 
-    QUERIES = {"*IDN?", "SYST:SAFE?", "SYST:ERR?", "SYST:LOG?", "SYST:CONF?", "SYST:NET?", "SYST:UPD:STAT?",
+    QUERIES = {"PSU:CAL?","SYST:UPTIME?", "PSU:STAT?", "DUT:STAT?", "*IDN?", "SYST:SAFE?", "SYST:ERR?", "SYST:LOG?", "SYST:CONF?", "SYST:NET?", "SYST:UPD:STAT?",
                "TEST:ALL?", "INTERLOCK:LIST?", "ROUT:STAT?", "RES:STAT?"}
     CONSOLE_ONLY = {"SYST:PROV:SERIAL", "SYST:PROV:NET"}
-    SETS = {"RES:PWR", "RES:SET", "ROUT:HIGH", "ROUT:LOW", "ROUT:SET", "ROUT:LOW:ALL", "SYST:UPD:BEGIN", "SYST:UPD:DATA", "SYST:UPD:COMMIT", "SYST:UPD:ABORT", "SYST:UPD:CONFIRM"}
-    ARGS = {"RES:PWR": (2, 2), "RES:SET": (3, 3), "RES:STAT?": (0, 0), "ROUT:HIGH": (1, 81), "ROUT:LOW": (1, 81), "ROUT:SET": (0, 81), "ROUT:LOW:ALL": (0, 0), "ROUT:STAT?": (0, 0), "*IDN?": (0, 0), "SAFE": (0, 0), "SYST:SAFE?": (0, 0), "SYST:ERR?": (0, 0), "SYST:LOG?": (0, 0),
+    SETS = {"PSU:CAL:MODE", "PSU:CAL:CODE","PSU:OUTP", "PSU:VOLT", "DUT:SET", "DUT:OFF:ALL", "RES:PWR", "RES:SET", "ROUT:HIGH", "ROUT:LOW", "ROUT:SET", "ROUT:LOW:ALL", "SYST:UPD:BEGIN", "SYST:UPD:DATA", "SYST:UPD:COMMIT", "SYST:UPD:ABORT", "SYST:UPD:CONFIRM"}
+    ARGS = {"PSU:CAL?":(0,0), "PSU:CAL:SET":(15,15), "PSU:CAL:SAVE":(0,0), "PSU:CAL:LOAD":(0,0), "PSU:CAL:MODE":(1,1), "PSU:CAL:CODE":(1,1),"SYST:UPTIME?": (0, 0), "PSU:OUTP":(2,2), "PSU:VOLT":(1,1), "PSU:STAT?":(0,0), "DUT:SET": (2,21), "DUT:OFF:ALL": (0,0), "DUT:STAT?": (0,0), "RES:PWR": (2, 2), "RES:SET": (3, 3), "RES:STAT?": (0, 0), "ROUT:HIGH": (1, 81), "ROUT:LOW": (1, 81), "ROUT:SET": (0, 81), "ROUT:LOW:ALL": (0, 0), "ROUT:STAT?": (0, 0), "*IDN?": (0, 0), "SAFE": (0, 0), "SYST:SAFE?": (0, 0), "SYST:ERR?": (0, 0), "SYST:LOG?": (0, 0),
             "SYST:CONF?": (0, 0), "SYST:NET?": (0, 0), "SYST:PROV:SERIAL": (1, 1), "SYST:PROV:NET": (1, 4),
             "SYST:UPD:BEGIN": (3, 3), "SYST:UPD:DATA": (1, 1), "SYST:UPD:COMMIT": (0, 0), "SYST:UPD:ABORT": (0, 0),
             "SYST:UPD:STAT?": (0, 0), "SYST:UPD:CONFIRM": (0, 0), "TEST:ALL?": (0, 0), "INTERLOCK:LIST?": (0, 0)}
@@ -229,6 +262,26 @@ class Device:
             self.generation += 1
         return result
 
+    def cmd_psu_cal_q(self,args):return self.psu.calibration("query",args)
+    def cmd_psu_cal_set(self,args):return self.psu.calibration("set",args)
+    def cmd_psu_cal_save(self,args):return self.psu.calibration("save",args)
+    def cmd_psu_cal_load(self,args):return self.psu.calibration("load",args)
+    def cmd_psu_cal_mode(self,args):return self.psu.calibration("mode",args)
+    def cmd_psu_cal_code(self,args):return self.psu.calibration("code",args)
+
+    def cmd_psu_outp(self,args):return self.psu.outp(args)
+    def cmd_psu_volt(self,args):return self.psu.volt(args)
+    def cmd_psu_stat_q(self,args):return self.psu.status()
+
+    def cmd_dut_set(self, args):
+        return self.dut.set(args)
+
+    def cmd_dut_off_all(self, args):
+        return self.dut.off()
+
+    def cmd_dut_stat_q(self, args):
+        return self.dut.status()
+
     def cmd_res_pwr(self, args):
         return self.sections.power(args)
 
@@ -244,8 +297,12 @@ class Device:
         return f"{VENDOR},{MODEL}-R{BOARD_REV},{self.serial or 'UNPROVISIONED'},{self.bank_versions[self.active_bank]}"
 
     def cmd_safe(self, args: list[str]) -> str:
-        self.safe_enter("SAFE")
+        if not self.safe_enter("SAFE"):
+            raise CommandError("SAFE_INCOMPLETE",",".join(str(i+1) for i,s in enumerate(self.safe.steps) if s=="FAIL"))
         return "OK"
+
+    def cmd_syst_uptime_q(self, args: list[str]) -> str:
+        return str(self.now_ms & 0xffffffff)
 
     def cmd_syst_safe_q(self, args: list[str]) -> str:
         return self.safe.text()
@@ -305,7 +362,7 @@ class Device:
     def cmd_syst_upd_begin(self, args: list[str]) -> str:
         if self.upd_state == "TRIAL":
             raise CommandError("UPD_SEQ", "trial pending")
-        if not self.in_safe_state:
+        if not self.in_safe_state or "FAIL" in self.safe.steps:
             raise CommandError("NOT_SAFE", "STATE")
         if not self.optbytes_ok:
             raise CommandError("NOT_SAFE", "OPTBYTES")
@@ -358,6 +415,9 @@ class Device:
         if hdr[8:16].rstrip(b"\0") != MODEL.encode():
             self.upd_state = "IDLE"
             raise CommandError("UPD_HEADER", "model")
+        if int.from_bytes(hdr[24:28], "little") != 0x32474643:
+            self.upd_state = "IDLE"
+            raise CommandError("UPD_HEADER", "layout")
         if hdr[16] != BOARD_REV:
             self.upd_state = "IDLE"
             raise CommandError("UPD_HEADER", "revision")
@@ -402,15 +462,15 @@ class Device:
         return "OK"
 
     def cmd_test_all_q(self, args: list[str]) -> str:
-        verdict = "FAIL" if not self.optbytes_ok or not self.sr_loop_ok else "WARN"
+        verdict = "FAIL" if not self.optbytes_ok else "WARN"
         i2c = ['SKIP,OFF' if not self.sections.on[b] else
                ('FAIL' if any((b, a) in self.sections.faults for a in (0x2c,0x2e,0x2f,0x27)) else 'OK') for b in range(2)]
-        if 'FAIL' in i2c:
+        if 'FAIL' in i2c or 'FAIL' in self.safe.steps:
             verdict = 'FAIL'
-        return (f"{verdict};SR0:{'OK' if self.sr_loop_ok else 'FAIL'};SR1:UNVERIFIED;I2C_A:{i2c[0]};I2C_B:{i2c[1]};DCOK:1;ALARM:1;"
+        return (f"{verdict};SR0:SKIPPED;SR1:UNVERIFIED;I2C_A:{i2c[0]};I2C_B:{i2c[1]};DCOK:{int(not self.psu.dcok())};ALARM:{int(self.psu.alarm)};"
                 f"LOADBOARD:LINK_LOST;INTERLOCK:{self.plugin['checksum']};PROV:{self.serial or 'UNPROVISIONED'};"
                 f"OPTBYTES:{'OK' if self.optbytes_ok else 'MISMATCH'};NET:{self.mode_name()},{self.current_ip()},UP;"
-                f"RESET:{self.reset_cause};SAFE:SILENT")
+                f"RESET:{self.reset_cause};SAFE:{'SAFE_INCOMPLETE' if 'FAIL' in self.safe.steps else 'SILENT'}")
 
     def cmd_interlock_list_q(self, args: list[str]) -> str:
         records = [f"{r['name']},{r['number']},{r['block']},{r['address']},{'+'.join(r['groups'])}"

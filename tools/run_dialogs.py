@@ -119,17 +119,21 @@ def run_file(path: Path, target: Target) -> tuple[int, str | None]:
 
 
 def _run_file(path: Path, target: Target) -> tuple[int, str | None]:
+    if not target.console and "#model-only" in path.read_text("utf-8").splitlines():
+        return 0, "SKIP: model-only GPIO events; use the step-5 hardware checklist"
     checks = 0
     gen: int | None = None
     target.connect()
     pending_console: str | None = None
     for lineno, raw in enumerate(path.read_text("utf-8").splitlines(), 1):
         line = raw.strip()
-        directives = ("#advance", "#reconnect", "#disconnect", "#connect", "#second-client", "#console")
+        directives = ("#psu", "#button", "#advance", "#reconnect", "#disconnect", "#connect", "#second-client", "#console")
         if not line or (line.startswith("#") and not line.startswith(directives)):
             continue
         where = f"{path.name}:{lineno}"
-        if line.startswith("#advance"):
+        if line.startswith("#button ") or line.startswith("#psu "):
+            target.send(line)
+        elif line.startswith("#advance"):
             target.advance(int(line.split()[1]))
         elif line == "#reconnect":
             target.close()

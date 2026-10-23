@@ -41,19 +41,15 @@ static void test_fill_and_compact(void)
     CHECK(cfg_set_net(&n) == -2);
     struct cfg_net out;
     CHECK(cfg_get_net(&out) && out.addr == n.addr);
-    /* Even in SAFE, never erase the only durable copy. */
     cfg_set_erase_allowed(true);
-    unsigned ops = host_flash_ops();
-    uint32_t saved_addr = n.addr;
-    n.addr = 0x77;
-    CHECK(cfg_set_net(&n) == -2);
-    CHECK(cfg_compact() == -2);
-    CHECK(host_flash_ops() == ops);
-    cfg_init(); /* reboot: all durable values still present */
-    CHECK(cfg_free_records() == 0);
-    char serial[CFG_SERIAL_MAX + 1];
-    CHECK(cfg_get_serial(serial) && strcmp(serial, "S1") == 0);
-    CHECK(cfg_get_net(&out) && out.addr == saved_addr);
+    CHECK(cfg_compact()==0);
+    CHECK(cfg_free_records()==CFG_RECORDS-2);
+    n.addr=0x77;CHECK(cfg_set_net(&n)==0);
+    cfg_init();
+    char serial[CFG_SERIAL_MAX+1];
+    CHECK(cfg_get_serial(serial) && strcmp(serial,"S1")==0);
+    CHECK(cfg_get_net(&out) && out.addr==n.addr);
+
 }
 
 static void test_trial_record(void)
@@ -78,8 +74,38 @@ static void test_snapshot(void)
     CHECK(buf[2] == CFG_SERIAL);
 }
 
+static void test_empty_gap_after_write_failure(void)
+{
+    device_boot();
+    host_cfg_fail_writes(1);
+    CHECK_STR(con_cmd("SYST:PROV:SERIAL FIRST"), "ERR:RANGE,flash");
+    CHECK_STR(con_cmd("SYST:PROV:SERIAL SECOND"), "OK");
+    size_t remaining=cfg_free_records();
+    board_early_init();core_init();
+    char serial[CFG_SERIAL_MAX+1];
+    CHECK(cfg_get_serial(serial) && strcmp(serial,"SECOND")==0);
+    CHECK(cfg_free_records()==remaining);
+    CHECK_STR(con_cmd("SYST:PROV:SERIAL THIRD"), "ERR:PROVISIONED");
+    struct cfg_net a={0,1,2,3}, b={1,4,5,6}, out;
+    CHECK(cfg_set_net(&a)==0);
+    host_cfg_fail_writes(2);
+    CHECK(cfg_set_net(&b)!=0);CHECK(cfg_set_net(&b)!=0);
+    CHECK(cfg_set_net(&b)==0);
+    struct cfg_trial t={2,1,1}, got;
+    CHECK(cfg_set_trial(&t)==0);
+    remaining=cfg_free_records();cfg_init();
+    CHECK(cfg_free_records()==remaining);
+    CHECK(cfg_get_net(&out) && out.addr==b.addr && out.dhcp==b.dhcp);
+    CHECK(cfg_get_trial(&got) && got.bank==2 && got.confirmed==1);
+    CHECK(cfg_set_net(&a)==0);cfg_init();
+    CHECK(cfg_get_serial(serial) && strcmp(serial,"SECOND")==0);
+    CHECK(cfg_get_trial(&got) && got.confirmed==1);
+    CHECK(cfg_get_net(&out) && out.addr==a.addr);
+}
+
 int main(void)
 {
+    test_empty_gap_after_write_failure();
     test_last_valid_wins();
     test_fill_and_compact();
     test_trial_record();

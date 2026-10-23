@@ -132,7 +132,7 @@ static void test_conf_constants(void)
     for (const char *p = before; *p; p++) {
         count += *p == '=';
     }
-    CHECK(count == 50);
+    CHECK(count == 51);
 }
 
 static void test_one_frame_per_command(void)
@@ -165,7 +165,7 @@ static void test_interlock_list(void)
     }
     CHECK(records == 81); /* 81 реле + последняя запись версии */
     CHECK(strstr(r, "M4,33,int,PG8,M+RA;") != NULL);
-    CHECK(strstr(r, "rev1.1,sha256:") != NULL);
+    CHECK(strstr(r, "rev1.3,sha256:") != NULL);
     /* FW-129: сумма не меняется после команд */
     char before[8192];
     strncpy(before, r, sizeof before - 1);
@@ -203,7 +203,7 @@ static void test_test_all(void)
 {
     device_boot();
     const char *r = con_cmd("TEST:ALL?");
-    CHECK_PREFIX(r, "WARN;SR0:OK;SR1:UNVERIFIED;");
+    CHECK_PREFIX(r, "WARN;SR0:SKIPPED;SR1:UNVERIFIED;");
     CHECK(strstr(r, "PROV:UNPROVISIONED") != NULL);
     CHECK(strstr(r, "OPTBYTES:OK") != NULL);
     CHECK(strstr(r, "RESET:") != NULL);
@@ -356,8 +356,19 @@ static void test_console_frame_resync(void)
     CHECK_PREFIX(reply_buf, "TESTDUT,");
 }
 
+static void test_uptime_query(void)
+{
+    device_boot();
+    host_set_ms(123456);
+    CHECK_STR(con_cmd("SYST:UPTIME?"),"123456");
+    CHECK_PREFIX(con_cmd("SYST:UPTIME? 1"),"ERR:RANGE");
+    host_set_ms(0);
+    CHECK_STR(con_cmd("SYST:UPTIME?"),"0");
+}
+
 int main(void)
 {
+    test_uptime_query();
     test_slow_progress_and_full_command_queue();
     test_console_frame_resync();
     test_closed_before_accept_processed();

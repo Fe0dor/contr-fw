@@ -1,0 +1,444 @@
+{
+  "installation": {
+    "image": "C:\\Users\\user\\Documents\\Projects\\contr-fw\\build\\target\\contr-fw.upd",
+    "sha256": "b47bf7864cd2df524c02b0bbee8b6d4c766c2fbd62f938000cff8cccee2cac5c",
+    "size": 66840,
+    "crc32": "2DA07CB6",
+    "mode": "confirm",
+    "before *IDN?": "G5;TESTDUT,CONTR-R1,UNPROVISIONED,0.4.1",
+    "before ROUT:STAT?": "G5;",
+    "before RES:STAT?": "G5;A:OFF;B:OFF;R1,POT,?;R1,MTX,?;R2,POT,?;R2,POTH,?;R2,MTX,?;R3,POT,?;R3,MTX,?;R4,POT,?;R4,POTH,?;R4,MTX,?",
+    "job": {
+      "kind": "update",
+      "status": "done",
+      "progress": 100,
+      "message": "Обновление подтверждено",
+      "deadline": null
+    },
+    "elapsed": 22.70299999997951,
+    "after *IDN?": "G1;TESTDUT,CONTR-R1,UNPROVISIONED,0.5.0",
+    "after SYST:UPD:STAT?": "G1;CONFIRMED,0,0",
+    "after ROUT:STAT?": "G1;",
+    "after RES:STAT?": "G1;A:OFF;B:OFF;R1,POT,?;R1,MTX,?;R2,POT,?;R2,POTH,?;R2,MTX,?;R3,POT,?;R3,MTX,?;R4,POT,?;R4,POTH,?;R4,MTX,?",
+    "after SYST:NET?": "G1;static,02:88:49:85:68:CC,192.168.0.20,UP",
+    "after SYST:LOG?": "G1;0,update: trial run bank 1;0,reset: software;8940,client connected;8940,SAFE CONNECT OK 0 ms;8972,update: confirmed"
+  },
+  "commands": [
+    {
+      "command": "SAFE",
+      "acknowledged": true
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C1,ON",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,ON;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C1,OFF",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C2,ON",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,ON;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C2,OFF",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C3,ON",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,ON;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C3,OFF",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C4,ON",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,ON;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C4,OFF",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C5,ON",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,ON;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C5,OFF",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C6,ON",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,ON;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C6,OFF",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C7,ON",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,ON;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C7,OFF",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C8,ON",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,ON;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C8,OFF",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C9,ON",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,ON;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C9,OFF",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C10,ON",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,ON;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C10,OFF",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C11,ON",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,ON;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C11,OFF",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C12,ON",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,ON;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C12,OFF",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C13,ON",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,ON;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C13,OFF",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C14,ON",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,ON;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C14,OFF",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C15,ON",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,ON;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C15,OFF",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C16,ON",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,ON;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C16,OFF",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C17,ON",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,ON;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C17,OFF",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C18,ON",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,ON;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C18,OFF",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C19,ON",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,ON;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C19,OFF",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C20,ON",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,ON;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C20,OFF",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C1,C99,ON",
+      "reply": "G4;ERR:RANGE"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C1,C1,ON",
+      "reply": "G4;ERR:RANGE"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C0,ON",
+      "reply": "G4;ERR:RANGE"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C1,1",
+      "reply": "G4;ERR:RANGE"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C1,ON",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:OFF:ALL",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G4;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "DUT:SET C20,ON",
+      "reply": "G4;OK"
+    },
+    {
+      "command": "SAFE",
+      "acknowledged": true
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G5;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    },
+    {
+      "command": "*IDN?",
+      "reply": "G5;TESTDUT,CONTR-R1,UNPROVISIONED,0.5.0"
+    },
+    {
+      "command": "SYST:UPD:STAT?",
+      "reply": "G5;CONFIRMED,0,0"
+    },
+    {
+      "command": "SYST:NET?",
+      "reply": "G5;static,02:88:49:85:68:CC,192.168.0.20,UP"
+    },
+    {
+      "command": "ROUT:STAT?",
+      "reply": "G5;"
+    },
+    {
+      "command": "RES:STAT?",
+      "reply": "G5;A:OFF;B:OFF;R1,POT,?;R1,MTX,?;R2,POT,?;R2,POTH,?;R2,MTX,?;R3,POT,?;R3,MTX,?;R4,POT,?;R4,POTH,?;R4,MTX,?"
+    },
+    {
+      "command": "SYST:ERR?",
+      "reply": "G5;RANGE;RANGE;RANGE;RANGE"
+    },
+    {
+      "command": "SAFE",
+      "acknowledged": true
+    },
+    {
+      "command": "DUT:STAT?",
+      "reply": "G6;C1,OFF;C2,OFF;C3,OFF;C4,OFF;C5,OFF;C6,OFF;C7,OFF;C8,OFF;C9,OFF;C10,OFF;C11,OFF;C12,OFF;C13,OFF;C14,OFF;C15,OFF;C16,OFF;C17,OFF;C18,OFF;C19,OFF;C20,OFF;INTERVENTION,0;PWROK,NA,NA,NA"
+    }
+  ]
+}

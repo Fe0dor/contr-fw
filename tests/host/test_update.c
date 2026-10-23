@@ -29,6 +29,7 @@ static void build_image(uint8_t revision, const char *version, size_t len)
     h.ver_minor = (uint8_t)b;
     h.ver_patch = (uint8_t)c;
     h.image_size = (uint32_t)len;
+    h.reserved[0] = FW_STORAGE_LAYOUT;
     memcpy(image + FW_HEADER_OFFSET, &h, sizeof h);
 }
 
@@ -69,7 +70,7 @@ static const char *begin(void)
 {
     static char line[128];
     uint32_t crc = crc32_update(0, image, image_len);
-    snprintf(line, sizeof line, "SYST:UPD:BEGIN %lu,%08lx,%s", (unsigned long)image_len, (unsigned long)crc, "0.3.0");
+    snprintf(line, sizeof line, "SYST:UPD:BEGIN %lu,%08lx,%s", (unsigned long)image_len, (unsigned long)crc, "0.6.2");
     return con_cmd(line);
 }
 
@@ -78,8 +79,11 @@ static void test_happy_path_and_confirm(void)
     device_boot();
     CHECK_STR(con_cmd("SYST:PROV:SERIAL MODEL-ONLY"), "OK");
     CHECK_STR(con_cmd("SYST:PROV:NET dhcp"), "OK");
+    struct cfg_psu_cal cal, restored;
+    for(unsigned i=0;i<15;i++)cal.code[i]=(uint16_t)(38000+i*1000);
+    CHECK(cfg_set_psu_cal(&cal)==0);
     const uint8_t *old_cfg = hal_cfg_base();
-    build_image(1, "0.3.0", 1000);
+    build_image(1, "0.6.2", 1000);
     CHECK_STR(con_cmd("SYST:UPD:DATA AAAA"), "ERR:UPD_SEQ");      /* FW-234 */
     CHECK_STR(con_cmd("SYST:UPD:CONFIRM"), "ERR:UPD_SEQ");
     CHECK_STR(begin(), "OK");
@@ -108,7 +112,10 @@ static void test_happy_path_and_confirm(void)
     struct cfg_net net;
     CHECK(cfg_get_serial(serial) && strcmp(serial, "MODEL-ONLY") == 0);
     CHECK(cfg_get_net(&net) && net.dhcp == 1);
+    CHECK(cfg_get_psu_cal(&restored) && memcmp(&cal,&restored,sizeof cal)==0);
     CHECK_STR(con_cmd("SYST:UPD:STAT?"), "TRIAL,0,0");
+    CHECK_PREFIX(con_cmd("PSU:CAL:SAVE"),"ERR:BUSY");
+    CHECK_PREFIX(con_cmd("PSU:CAL:MODE ON"),"ERR:BUSY");
     CHECK_STR(con_cmd("SYST:UPD:CONFIRM"), "OK");
     CHECK(cfg_get_trial(&t) && t.confirmed == 1);
     CHECK_STR(con_cmd("SYST:UPD:CONFIRM"), "ERR:UPD_SEQ");
@@ -118,12 +125,13 @@ static void test_happy_path_and_confirm(void)
     CHECK(cfg_get_trial(&t) && t.boot_count == 0 && !t.confirmed);
     CHECK(cfg_get_serial(serial) && strcmp(serial, "MODEL-ONLY") == 0);
     CHECK(cfg_get_net(&net) && net.dhcp == 1);
+    CHECK(cfg_get_psu_cal(&restored) && memcmp(&cal,&restored,sizeof cal)==0);
 }
 
 static void test_rollback_by_timeout_and_second_boot(void)
 {
     device_boot();
-    build_image(1, "0.3.0", 1024);
+    build_image(1, "0.6.2", 1024);
     CHECK_STR(begin(), "OK");
     CHECK_STR(send_image(200), "OK");
     CHECK_STR(con_cmd("SYST:UPD:COMMIT"), "OK");
@@ -155,7 +163,7 @@ static void test_rollback_by_timeout_and_second_boot(void)
 static void test_rejections(void)
 {
     device_boot();
-    build_image(1, "0.3.0", 700);
+    build_image(1, "0.6.2", 700);
     /* FW-233: не в безопасном состоянии */
     observed.in_safe_state = false;
     CHECK_STR(begin(), "ERR:NOT_SAFE,STATE");
@@ -179,7 +187,7 @@ static void test_rejections(void)
     CHECK(host_boot_bank() == 1);
     image[100] ^= 1;
     /* FW-235: другая ревизия → UPD_HEADER,revision */
-    build_image(2, "0.3.0", 700);
+    build_image(2, "0.6.2", 700);
     CHECK_STR(begin(), "OK");
     CHECK_STR(send_image(256), "OK");
     CHECK_STR(con_cmd("SYST:UPD:COMMIT"), "ERR:UPD_HEADER,revision");
@@ -189,8 +197,9 @@ static void test_rejections(void)
     uint32_t crc = crc32_update(0, image, image_len);
     snprintf(line, sizeof line, "SYST:UPD:BEGIN %lu,%08lx,0.1.0", (unsigned long)image_len, (unsigned long)crc);
     CHECK_STR(con_cmd(line), "ERR:UPD_HEADER,version");
+    CHECK_STR(con_cmd("SYST:UPD:BEGIN 700,0,0.6.0"), "ERR:UPD_HEADER,version");
     /* ABORT возвращает в IDLE */
-    build_image(1, "0.3.0", 700);
+    build_image(1, "0.6.2", 700);
     CHECK_STR(begin(), "OK");
     CHECK_STR(con_cmd("SYST:UPD:ABORT"), "OK");
     CHECK_STR(con_cmd("SYST:UPD:STAT?"), "IDLE,0,0");
@@ -205,12 +214,48 @@ static void test_bad_vectors(void)
     };
     for (unsigned i = 0; i < sizeof invalid / sizeof invalid[0]; i++) {
         device_boot();
-        build_image(1, "0.3.0", 1024);
+        build_image(1, "0.6.2", 1024);
         memcpy(image, invalid[i], sizeof invalid[i]);
         CHECK_STR(begin(), "OK"); /* CRC includes the invalid vectors */
         CHECK_STR(send_image(256), "OK");
         CHECK_STR(con_cmd("SYST:UPD:COMMIT"), "ERR:UPD_HEADER,vectors");
         CHECK(host_boot_bank() == 1 && !host_reset_requested());
+    }
+}
+
+static bool erase_interrupt_sent;
+static bool erase_disconnect;
+static void interrupt_erase(void)
+{
+    if (erase_interrupt_sent || host_journal_find("bank_erase ", 0) < 0) return;
+    erase_interrupt_sent = true;
+    if (erase_disconnect) host_net_disconnect();
+    else host_console_push_line("SAFE");
+}
+
+static void test_begin_interruption(void)
+{
+    for (unsigned mode = 0; mode < 2; ++mode) {
+        device_boot();
+        CHECK(tcp_connect());
+        erase_disconnect = mode != 0;
+        erase_interrupt_sent = false;
+        host_journal_clear();
+        host_net_set_poll_hook(interrupt_erase);
+        host_net_push_line("SYST:UPD:BEGIN 1000,12345678,0.6.2");
+        device_run(6);
+        host_net_set_poll_hook(NULL);
+        CHECK(erase_interrupt_sent);
+        CHECK(host_journal_find("bank_erase 1", 0) < 0);
+        CHECK(upd_get_state() == UPD_IDLE);
+        CHECK(host_boot_bank() == 1 && !host_reset_requested());
+        if (!erase_disconnect) {
+            CHECK(host_net_take_line(reply_buf, sizeof reply_buf));
+            CHECK_STR(reply_buf, "G1;ERR:ABORTED");
+            CHECK(host_console_take_line(reply_buf, sizeof reply_buf));
+            CHECK_STR(reply_buf, "OK");
+        }
+        CHECK_STR(con_cmd("SYST:UPD:STAT?"), "IDLE,0,0");
     }
 }
 
@@ -230,8 +275,49 @@ static void test_utils(void)
     CHECK(!version_parse("1.2", &v));
 }
 
+static void test_trial_counter_write_failure(void)
+{
+    for (unsigned active=1;active<=2;++active) {
+        device_boot();
+        host_set_active_bank((uint8_t)active);CHECK(hal_bank_set_boot((uint8_t)active)==0);cfg_init();
+        struct cfg_trial t={(uint8_t)active,0,0}, got;
+        CHECK(cfg_set_trial(&t)==0);
+        host_cfg_fail_writes(1);
+        board_early_init();core_init();
+        CHECK(host_reset_requested());
+        CHECK(host_boot_bank()==(active==1?2:1));
+        CHECK(upd_get_state()!=UPD_TRIAL);
+        CHECK(cfg_get_trial(&got) && got.boot_count==0);
+        CHECK(strstr(con_cmd("SYST:ERR?"),"trial counter write failed"));
+    }
+}
+
+static void test_layout_and_full_cfg(void)
+{
+    device_boot();build_image(1,"0.6.2",1024);
+    uint32_t old_layout=UINT32_MAX;
+    memcpy(image+FW_HEADER_OFFSET+24,&old_layout,4);
+    CHECK_STR(begin(),"OK");CHECK_STR(send_image(256),"OK");
+    CHECK_STR(con_cmd("SYST:UPD:COMMIT"),"ERR:UPD_HEADER,layout");
+    CHECK(!host_reset_requested());
+    CHECK_STR(con_cmd("SYST:UPD:BEGIN 786433,0,0.6.2"),"ERR:RANGE,size");
+    CHECK(cfg_set_serial("FULL-CFG")==0);
+    struct cfg_net n={0,0xc0a80014,0xffffff00,0};
+    while(cfg_free_records())CHECK(cfg_set_net(&n)==0);
+    build_image(1,"0.6.2",1024);
+    CHECK_STR(begin(),"OK");CHECK_STR(send_image(256),"OK");
+    CHECK_STR(con_cmd("SYST:UPD:COMMIT"),"OK");
+    CHECK(host_boot_bank()==2);
+    host_set_active_bank(2);board_early_init();core_init();
+    char serial[CFG_SERIAL_MAX+1];CHECK(cfg_get_serial(serial)&&strcmp(serial,"FULL-CFG")==0);
+    CHECK(upd_get_state()==UPD_TRIAL);CHECK_STR(con_cmd("SYST:UPD:CONFIRM"),"OK");
+}
+
 int main(void)
 {
+    test_layout_and_full_cfg();
+    test_trial_counter_write_failure();
+    test_begin_interruption();
     test_bad_vectors();
     test_utils();
     test_happy_path_and_confirm();

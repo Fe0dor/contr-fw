@@ -21,10 +21,10 @@ def test_rejection_safe_reset_and_diagnostics():
     assert d.execute('console','ROUT:HIGH M5,L1')=='ERR:INTERLOCK,M__M4__M5,M4,M5'
     assert d.execute('console','ROUT:SET M99')=='ERR:RANGE'
     assert d.execute('console','ROUT:SET M5,')=='ERR:RANGE'
-    assert 'SR0:OK' in d.execute('console','TEST:ALL?')
+    assert 'SR0:SKIPPED' in d.execute('console','TEST:ALL?')
     assert d.execute('console','ROUT:STAT?')=='V1.1,M4'
     d.sr_loop_ok=False
-    assert d.execute('console','TEST:ALL?').startswith('FAIL;SR0:FAIL;')
+    assert d.execute('console','TEST:ALL?').startswith('WARN;SR0:SKIPPED;')
     d.reboot()
     assert d.execute('console','ROUT:STAT?')==''
     assert d.execute('console','ROUT:SET L1,L2,L3,L4,L5,PM1,PM2,PM3,CH2.1')=='OK'

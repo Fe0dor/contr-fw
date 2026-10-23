@@ -19,6 +19,9 @@
 
 static bool swapped(void)
 {
+    /* Boot bookkeeping precedes clock/peripheral initialization. */
+    RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
+    (void)RCC->APB2ENR;
     return (SYSCFG->MEMRMP & SYSCFG_MEMRMP_SWP_FB) != 0;
 }
 
@@ -123,15 +126,29 @@ const uint8_t *hal_cfg_base(void)
 
 int hal_cfg_erase(void)
 {
-    return erase_sector_at(BANK1_BASE + CFG_OFFSET, SECTOR_LAST, HAL_CFG_SIZE);
+    hal_wdt_kick();
+    return erase_sector_at(BANK1_BASE + CFG_OFFSET, SECTOR_LAST, HAL_CFG_STORAGE_SIZE);
 }
 
 int hal_cfg_write(uint32_t offset, const uint8_t *data, size_t len)
 {
-    if (offset + len > HAL_CFG_SIZE) {
+    if (offset > HAL_CFG_STORAGE_SIZE || len > HAL_CFG_STORAGE_SIZE - offset) {
         return -1;
     }
+    hal_wdt_kick();
     return program(BANK1_BASE + CFG_OFFSET + offset, data, len);
+}
+
+/* Dedicated transaction backup in sector 10 of the active physical bank. */
+const uint8_t *hal_cfg_backup_base(void) { return (const uint8_t *)(BANK1_BASE + HAL_CFG_BACKUP_OFFSET); }
+int hal_cfg_backup_erase(void) {
+    hal_wdt_kick();
+    return erase_sector_at(BANK1_BASE + HAL_CFG_BACKUP_OFFSET, 10u, HAL_CFG_BACKUP_SIZE);
+}
+int hal_cfg_backup_write(uint32_t offset, const uint8_t *data, size_t len) {
+    if (offset > HAL_CFG_BACKUP_SIZE || len > HAL_CFG_BACKUP_SIZE - offset) return -1;
+    hal_wdt_kick();
+    return program(BANK1_BASE + HAL_CFG_BACKUP_OFFSET + offset, data, len);
 }
 
 /* ---- второй банк ---- */

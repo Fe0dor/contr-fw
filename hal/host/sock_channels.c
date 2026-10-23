@@ -3,6 +3,7 @@
  * "#advance <мс>" на любом канале продвигает его без ожидания (директива диалогов А13).
  * Второе соединение получает ERR:BUSY и закрывается, как на плате. */
 #include <stdio.h>
+#include "config.h"
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -27,6 +28,9 @@ typedef int sock_t;
 #endif
 
 #include "hal_host.h"
+#include "dut.h"
+#include "psu.h"
+#include "signals.h"
 
 static struct {
     sock_t listen_fd, client_fd;
@@ -76,9 +80,23 @@ static void feed(const uint8_t *buf, size_t len, char *partial, size_t *plen, vo
         if (c == '\n') {
             partial[*plen] = '\0';
             if (partial[0] == '#') {
+                char ps[16]; unsigned pv;
+                if (sscanf(partial,"#psu %15s %u",ps,&pv)==2 && pv<=1) {
+                    int id=!strcmp(ps,"DCOK")?SIG_RSP_DC_OK:!strcmp(ps,"ALARM")?SIG_RSP_ALARM:-1;
+                    if(id>=0)host_gpio_set_input(signal_table[id].port,signal_table[id].pin,
+                        (pv!=0)==(id==SIG_RSP_DC_OK ? DCOK_ACTIVE_HIGH!=0 : ALARM_ACTIVE_HIGH!=0));
+                    else if(!strcmp(ps,"DAC_FAIL"))host_psu_dac_fail(pv!=0);
+                    psu_poll();
+                }
+                char name[16]; unsigned level;
+                if (sscanf(partial, "#button %15s %u", name, &level) == 2 && level <= 1) {
+                    int id = signal_find(name);
+                    if (id >= 0 && signal_table[id].dir == SIGNAL_DUT)
+                        host_gpio_set_input(signal_table[id].port, signal_table[id].pin, level != 0);
+                }
                 unsigned long ms = 0;
                 if (sscanf(partial, "#advance %lu", &ms) == 1) {
-                    host_advance_ms((uint32_t)ms);
+                    for (unsigned long t = 0; t < ms; t++) { host_advance_ms(1); dut_poll(); psu_poll(); }
                 }
             } else {
                 deliver((const uint8_t *)partial, *plen);

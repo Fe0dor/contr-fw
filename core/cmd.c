@@ -15,6 +15,8 @@
 #include "safe.h"
 #include "relays.h"
 #include "sections.h"
+#include "dut.h"
+#include "psu.h"
 #include "signals.h"
 #include "sr.h"
 #include "state.h"
@@ -107,6 +109,9 @@ void resp_err(struct cmdctx *c, enum err_code code, const char *fields)
 const char *cmd_err_name(enum err_code code)
 {
     switch (code) {
+    case ERR_CAL_REQUIRED: return "CAL_REQUIRED";
+    case ERR_CAL_MODE: return "CAL_MODE";
+    case ERR_CAL_STORAGE: return "CAL_STORAGE";
     case ERR_UNKNOWN_CMD: return "UNKNOWN_CMD";
     case ERR_RANGE: return "RANGE";
     case ERR_INTERLOCK: return "INTERLOCK";
@@ -140,6 +145,12 @@ static void h_idn(struct cmdctx *c)
     }
     resp_printf(c, "%s,%s-R%d,%s,%d.%d.%d", FW_VENDOR, FW_MODEL, BOARD_REV, serial, FW_VERSION_MAJOR,
                 FW_VERSION_MINOR, FW_VERSION_PATCH);
+    resp_end(c);
+}
+
+static void h_uptime(struct cmdctx *c)
+{
+    resp_printf(c, "%lu", (unsigned long)hal_millis());
     resp_end(c);
 }
 
@@ -295,7 +306,7 @@ static void h_test_all(struct cmdctx *c)
     struct hal_optbytes ob = hal_optbytes_read();
     bool opt_ok = ob.ndbank == (OPT_NDBANK != 0) && ob.ndboot == (OPT_NDBOOT != 0) && ob.iwdg_sw == (OPT_IWDG_SW != 0);
     bool safe_ok = observed.safe.complete;
-    bool sr_ok = sr_test_loop();
+    bool sr_ok = !SR0_LOOP_PRESENT || sr_test_loop();
     bool i2c_a=section_test(0), i2c_b=section_test(1);
     bool warn = true; /* SR1:UNVERIFIED и шаг «подтверждён молчанием» */
     const char *verdict = (!opt_ok || !safe_ok || !sr_ok || !i2c_a || !i2c_b) ? "FAIL" : warn ? "WARN" : "OK";
@@ -314,7 +325,7 @@ static void h_test_all(struct cmdctx *c)
     for (int i = 0; i < SAFE_STEPS; i++) {
         silent = silent || observed.safe.steps[i] == STEP_SILENT;
     }
-    resp_printf(c, "%s;SR0:%s;SR1:UNVERIFIED;I2C_A:%s;I2C_B:%s;DCOK:%d;ALARM:%d;", verdict, sr_ok ? "OK" : "FAIL",
+    resp_printf(c, "%s;SR0:%s;SR1:UNVERIFIED;I2C_A:%s;I2C_B:%s;DCOK:%d;ALARM:%d;", verdict, !SR0_LOOP_PRESENT ? "SKIPPED" : sr_ok ? "OK" : "FAIL",
                 !desired.section_on[0]?"SKIP,OFF":i2c_a?"OK":"FAIL",
                 !desired.section_on[1]?"SKIP,OFF":i2c_b?"OK":"FAIL",
                 signal_read(SIG_RSP_DC_OK) ? 1 : 0, signal_read(SIG_RSP_ALARM) ? 1 : 0);
@@ -361,6 +372,7 @@ void dbg_spi(struct cmdctx *c);
 static const struct cmd_desc table[] = {
     {"*IDN?", 0, 0, CMDF_QUERY, h_idn},
     {"SAFE", 0, 0, CMDF_SAFE, h_safe},
+    {"SYST:UPTIME?", 0, 0, CMDF_QUERY, h_uptime},
     {"SYST:SAFE?", 0, 0, CMDF_QUERY, h_syst_safe},
     {"SYST:ERR?", 0, 0, CMDF_QUERY, h_syst_err},
     {"SYST:LOG?", 0, 0, CMDF_QUERY, h_syst_log},
@@ -376,6 +388,18 @@ static const struct cmd_desc table[] = {
     {"SYST:UPD:CONFIRM", 0, 0, 0, cmd_upd_confirm},
     {"TEST:ALL?", 0, 0, CMDF_QUERY, h_test_all},
     {"INTERLOCK:LIST?", 0, 0, CMDF_QUERY, h_interlock_list},
+    {"PSU:OUTP", 2, 2, CMDF_SET, cmd_psu_outp},
+    {"PSU:VOLT", 1, 1, CMDF_SET, cmd_psu_volt},
+    {"PSU:CAL?", 0, 0, CMDF_QUERY, cmd_psu_cal_stat}, 
+    {"PSU:CAL:SET", 15, 15, 0, cmd_psu_cal_set}, 
+    {"PSU:CAL:SAVE", 0, 0, 0, cmd_psu_cal_save}, 
+    {"PSU:CAL:LOAD", 0, 0, 0, cmd_psu_cal_load}, 
+    {"PSU:CAL:MODE", 1, 1, CMDF_SET, cmd_psu_cal_mode}, 
+    {"PSU:CAL:CODE", 1, 1, CMDF_SET, cmd_psu_cal_code}, 
+    {"PSU:STAT?", 0, 0, CMDF_QUERY, cmd_psu_stat},
+    {"DUT:SET", 2, 21, CMDF_SET, cmd_dut_set},
+    {"DUT:OFF:ALL", 0, 0, CMDF_SET, cmd_dut_off},
+    {"DUT:STAT?", 0, 0, CMDF_QUERY, cmd_dut_stat},
     {"RES:PWR", 2, 2, CMDF_SET, cmd_res_pwr},
     {"RES:SET", 3, 3, CMDF_SET, cmd_res_set},
     {"RES:STAT?", 0, 0, CMDF_QUERY, cmd_res_stat},
@@ -487,6 +511,11 @@ void cmd_execute(enum channel_id ch, char *line)
         return;
     }
     c.cmd = cmd;
+    if (!(cmd->flags & CMDF_QUERY) &&
+        (!strncmp(line,"PSU:",4) || !strncmp(line,"ROUT:",5) ||
+         !strncmp(line,"RES:",4) || !strncmp(line,"DUT:",4))) {
+        log_event("CMD %s %s", line, args);
+    }
     /* аргументы через ',' без пробелов */
     if (*args) {
         char *p = args;
@@ -517,6 +546,7 @@ void cmd_execute(enum channel_id ch, char *line)
         resp_err(&c, ERR_BUSY, NULL);
         return;
     }
+    if (cmd->flags & CMDF_SET) cfg_set_erase_allowed(false);
     cmd->fn(&c);
     if (!c.ended) {
         resp_ok(&c); /* обработчик обязан завершить кадр; страховка принципа 1 */

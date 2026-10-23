@@ -65,7 +65,7 @@ def test_panels_connect_and_busy_owner(bridge, emulator, tmp_path):
     connect(bridge, emulator)
     s = bridge.snapshot()
     assert s['connected']
-    assert s['replies']['*IDN?'].endswith('0.4.0')
+    assert s['replies']['*IDN?'].endswith('0.6.1')
     assert len(s['relays']) == 81
     assert 'M4' in s['commands']
     assert 'BOARD_REV=1' in s['replies']['SYST:CONF?']
@@ -121,7 +121,7 @@ def test_master_rollback_reports_device_evidence(bridge, emulator):
     eventually(lambda: bridge.snapshot()['job']['status'] in {'rolled_back', 'failed'}, timeout=12)
     s = bridge.snapshot()
     assert s['job']['status'] == 'rolled_back', s['job']
-    assert s['replies']['*IDN?'].endswith('0.4.0')
+    assert s['replies']['*IDN?'].endswith('0.6.1')
 
 
 def test_safe_reply_cannot_be_mistaken_for_next_command(bridge):
@@ -137,7 +137,7 @@ def test_safe_reply_cannot_be_mistaken_for_next_command(bridge):
                 self.lines.put('G1;ERR:ABORTED')
                 self.lines.put('G2;OK')
             else:
-                self.lines.put('G2;TESTDUT,CONTR-R1,X,0.4.0')
+                self.lines.put('G2;TESTDUT,CONTR-R1,X,0.6.1')
         def close(self):
             pass
     wire = FakeLink()
@@ -148,7 +148,7 @@ def test_safe_reply_cannot_be_mistaken_for_next_command(bridge):
     assert wire.started.wait(2)
     bridge.safe()
     assert future.result(3)['reply'] == 'G1;ERR:ABORTED'
-    assert bridge.submit('command', command='*IDN?').result(3)['reply'].endswith('0.4.0')
+    assert bridge.submit('command', command='*IDN?').result(3)['reply'].endswith('0.6.1')
     assert wire.lines.empty()
 
 
@@ -175,7 +175,7 @@ def test_http_origin_token_validation_and_assets(bridge):
             assert "frame-ancestors 'none'" in response.headers['Content-Security-Policy']
         with urlopen(url + '/api/commands') as response:
             catalog = json.load(response)
-            assert len(catalog) == 35
+            assert len(catalog) == 48
         with urlopen(url + '/sections.js') as response:
             assert b'buildSections' in response.read()
             assert sum(item['bringup'] for item in catalog) == 10
@@ -282,3 +282,60 @@ def test_sections_panel_polling_and_safe(bridge, emulator):
     bridge.safe()
     eventually(lambda: bridge.snapshot()['safe_acknowledged'])
     eventually(lambda: 'A:OFF;B:OFF' in bridge.snapshot()['replies'].get('RES:STAT?', ''))
+
+
+def test_dut_panel_poll_preserves_manual_event(bridge, emulator):
+    connect(bridge, emulator)
+    assert bridge.snapshot()['dut_supported']
+    bridge.submit('command',command='DUT:SET C1,ON').result(5)
+    assert 'C1,ON' in bridge.submit('command',command='DUT:STAT?').result(5)['reply']
+    proc=emulator[1]
+    proc.stdin.write('#button C3 1\n#advance 100\n');proc.stdin.flush()
+    eventually(lambda: any(e['kind']=='manual' for e in bridge.snapshot()['events']))
+    first=[e for e in bridge.snapshot()['events'] if e['kind']=='manual']
+    assert 'C3,MANUAL' in first[-1]['report']
+    reply=bridge.submit('command',command='DUT:STAT?').result(5)['reply']
+    assert 'INTERVENTION,0' in reply
+    assert any(e['kind']=='manual' for e in bridge.snapshot()['events'])
+    bridge.safe()
+    eventually(lambda: bridge.snapshot()['safe_acknowledged'])
+    assert 'C1,OFF' in bridge.submit('command',command='DUT:STAT?').result(5)['reply']
+
+
+def test_psu_poll_preserves_fault_event(bridge, emulator):
+    connect(bridge, emulator)
+    assert bridge.snapshot()['psu_supported']
+    assert bridge.submit('command',command='SAFE').result(5)['reply'].endswith(';OK')
+    assert bridge.submit('command',command='PSU:CAL:SET '+','.join(str(i*4000) for i in range(15))).result(5)['reply'].endswith(';OK')
+    assert bridge.submit('command',command='PSU:OUTP RSP,ON').result(5)['reply'].endswith(';OK')
+    proc = emulator[1]
+    proc.stdin.write('#psu ALARM 1\n'); proc.stdin.flush()
+    eventually(lambda: any(e['text']=='БП RSP: PSU_ALARM' for e in bridge.snapshot()['events']))
+    assert bridge.snapshot()['replies']['PSU:STAT?'].startswith('OFF:PSU_ALARM')
+    for _ in range(2):
+        bridge.submit('command',command='PSU:STAT?').result(5)
+    matching=[e for e in bridge.snapshot()['events'] if e['text']=='БП RSP: PSU_ALARM']
+    assert len(matching)==1 and matching[0]['kind']=='error'
+
+
+def test_serial_empty_relay_reply_is_valid():
+    from contr_ui.links import SerialLink
+    bridge = Bridge.__new__(Bridge)
+    bridge.stop = threading.Event()
+    bridge.link = SerialLink.__new__(SerialLink)
+    bridge.link.lines = queue.Queue()
+    bridge.link.lines.put("")
+    seen = []
+    bridge._observe = lambda command, reply: seen.append((command, reply))
+    assert bridge._read_reply(time.monotonic() + .2, "ROUT:STAT?") == ""
+    assert seen == [("ROUT:STAT?", "")]
+
+
+def test_failed_safe_clears_calibration_write_availability(bridge):
+    bridge._observe('SAFE','G1;OK')
+    assert bridge.snapshot()['safe_acknowledged']
+    bridge._observe('SAFE','G2;ERR:SAFE_INCOMPLETE')
+    assert not bridge.snapshot()['safe_acknowledged']
+    bridge._observe('SAFE','G3;OK')
+    bridge._observe('PSU:CAL:SET 1,2','G3;ERR:PSU_FAULT,DAC')
+    assert not bridge.snapshot()['safe_acknowledged']

@@ -23,7 +23,7 @@
 #   mux  — сигналы на силовик (плата MUX)
 #   load — сигналы на блок нагрузок
 
-table_version: "rev1.1"
+table_version: "rev1.3"
 next_number: 82
 retired: []
 
@@ -77,7 +77,7 @@ relays:
   - {name: V3.3,  number: 18, block: mux,  address: PD3,     groups: [V]}
   - {name: V3.4,  number: 19, block: mux,  address: PG3,     groups: [V]}
   - {name: V3.5,  number: 20, block: mux,  address: PD7,     groups: [V]}
-  - {name: V3.6,  number: 21, block: mux,  address: SR0.2.A, groups: [V], note: контрольная точка TP33}
+  - {name: V3.6,  number: 21, block: mux,  address: PE3,     groups: [V]}
   - {name: V3.7,  number: 22, block: mux,  address: PF2,     groups: [V]}
   - {name: V3.8,  number: 23, block: mux,  address: PF8,     groups: [V]}
   - {name: V3.9,  number: 24, block: mux,  address: PD1,     groups: [V]}
@@ -109,7 +109,7 @@ relays:
   # --- A: амперметр, силовые реле в цепи 48 В ---
   - {name: A1,    number: 49, block: mux,  address: PC2,     groups: [A]}
   - {name: A2,    number: 50, block: mux,  address: PD6,     groups: [A]}
-  - {name: A3,    number: 51, block: mux,  address: PE3,     groups: [A]}
+  - {name: A3,    number: 51, block: mux,  address: SR0.2.A, groups: [A], note: контрольная точка TP33}
   - {name: A4,    number: 52, block: mux,  address: PF1,     groups: [A]}
   - {name: A5,    number: 53, block: mux,  address: PD0,     groups: [A]}
   # --- CH: осциллограф ---

@@ -11,6 +11,7 @@
 /* Заголовок образа: секция .fw_header по смещению FW_HEADER_OFFSET от начала образа. */
 #define FW_HEADER_OFFSET 0x200u
 #define FW_HEADER_MAGIC "CONTRFW1"
+#define FW_STORAGE_LAYOUT 0x32474643u /* CFG2: sectors 10/11 reserved */
 
 struct fw_header {
     char magic[8];       /* "CONTRFW1" */

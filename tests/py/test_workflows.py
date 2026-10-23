@@ -9,8 +9,8 @@ from contr_ui.workflows import UpdateImage, parse_script, payload
 def image():
     data = bytearray(b"\xff" * 1024)
     struct.pack_into("<II", data, 0, 0x20080000, 0x08000225)
-    struct.pack_into("<8s8sBBBBI3I", data, 0x200, b"CONTRFW1", b"CONTR", 1, 0, 3, 0,
-                     len(data), 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF)
+    struct.pack_into("<8s8sBBBBI3I", data, 0x200, b"CONTRFW1", b"CONTR", 1, 0, 6, 2,
+                     len(data), 0x32474643, 0xFFFFFFFF, 0xFFFFFFFF)
     return bytes(data)
 
 
@@ -74,9 +74,38 @@ def test_invalid_vectors_rejected_with_valid_crc(sp, reset):
         UpdateImage.read(bytes(data))
     dev = Device()
     crc = zlib.crc32(data) & 0xFFFFFFFF
-    assert dev.execute('console', f'SYST:UPD:BEGIN {len(data)},{crc:08x},0.3.0') == 'OK'
+    assert dev.execute('console', f'SYST:UPD:BEGIN {len(data)},{crc:08x},0.6.2') == 'OK'
     for off in range(0, len(data), 256):
         block = base64.b64encode(data[off:off+256]).decode()
         assert dev.execute('console', f'SYST:UPD:DATA {block}') == 'OK'
     assert dev.execute('console', 'SYST:UPD:COMMIT') == 'ERR:UPD_HEADER,vectors'
     assert dev.boot_bank == 1
+
+
+@pytest.mark.parametrize('layout', [0xffffffff, 0, 0x31474643])
+def test_legacy_layout_rejected_before_upload_and_at_commit(layout):
+    import base64, zlib
+    data = bytearray(image())
+    struct.pack_into('<I', data, 0x218, layout)
+    with pytest.raises(ValueError, match='CFG2'):
+        UpdateImage.read(bytes(data))
+    dev = Device()
+    crc = zlib.crc32(data) & 0xffffffff
+    assert dev.execute('console', f'SYST:UPD:BEGIN {len(data)},{crc:x},0.6.2') == 'OK'
+    for off in range(0, len(data), 256):
+        assert dev.execute('console', 'SYST:UPD:DATA '+base64.b64encode(data[off:off+256]).decode()) == 'OK'
+    assert dev.execute('console', 'SYST:UPD:COMMIT') == 'ERR:UPD_HEADER,layout'
+    assert dev.boot_bank == 1
+
+
+@pytest.mark.parametrize('size,valid', [(768*1024,True),(768*1024+1,False),(800*1024,False)])
+def test_storage_size_boundary(size, valid):
+    data = bytearray(image()) + bytearray(size-1024)
+    struct.pack_into('<I', data, 0x214, size)
+    if valid:
+        UpdateImage.read(bytes(data))
+    else:
+        with pytest.raises(ValueError, match='Размер'):
+            UpdateImage.read(bytes(data))
+    answer = Device().execute('console', f'SYST:UPD:BEGIN {size},0,0.6.2')
+    assert answer == ('OK' if valid else 'ERR:RANGE,size')

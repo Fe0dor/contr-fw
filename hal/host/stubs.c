@@ -11,6 +11,7 @@ static struct {
     char journal[HOST_JOURNAL_MAX][96];
     size_t journal_n;
     struct host_pin pins[11][16];
+    bool external_set[11][16], external_level[11][16];
     uint8_t sr_shift[HAL_SR_CHAINS][4];
     uint8_t sr_out[HAL_SR_CHAINS][4];
     bool sr_srclr[HAL_SR_CHAINS], sr_oe[HAL_SR_CHAINS];
@@ -26,7 +27,10 @@ static struct {
     bool button;
     unsigned wdt_kicks;
     unsigned flash_ops;
+    unsigned cfg_write_failures;
+    void (*cfg_flash_hook)(const char *,size_t);
     bool sr_loop_broken;
+    bool psu_dac_fail;
 } h;
 
 static void journal(const char *fmt, ...)
@@ -112,6 +116,8 @@ struct host_pin *host_pin(uint8_t port, uint8_t pin)
 void host_gpio_set_input(uint8_t port, uint8_t pin, bool level)
 {
     struct host_pin *p = host_pin(port, pin);
+    h.external_set[port][pin] = true;
+    h.external_level[port][pin] = level;
     if (p->mode == HAL_PIN_IN) {
         p->level = level;
     }
@@ -125,6 +131,8 @@ void hal_gpio_config(uint8_t port, uint8_t pin, enum hal_pin_mode mode, enum hal
     p->pull = pull;
     if (mode == HAL_PIN_OUT) {
         p->level = level;
+    } else if (h.external_set[port][pin]) {
+        p->level = h.external_level[port][pin];
     } else if (pull != HAL_PULL_NONE) {
         p->level = pull == HAL_PULL_UP; /* вход без внешнего источника — по подтяжке */
     }
@@ -255,21 +263,52 @@ static int flash_program(uint8_t *dst, const uint8_t *data, size_t len)
 uint8_t *host_cfg_memory(void) { return h.bank[h.active_bank - 1u] + HAL_BANK_SIZE - 128u * 1024u; }
 const uint8_t *hal_cfg_base(void) { return host_cfg_memory(); }
 
+void host_cfg_flash_hook(void (*hook)(const char *,size_t)) { h.cfg_flash_hook=hook; }
+static void cfg_erase_bytes(uint8_t *dst,size_t len,const char *tag) {
+    for(size_t i=0;i<len;i+=64) {
+        memset(dst+i,0xff,64);
+        if(h.cfg_flash_hook)h.cfg_flash_hook(tag,i+64);
+    }
+}
+static int cfg_program_bytes(uint8_t *dst,const uint8_t *data,size_t len,const char *tag) {
+    for(size_t i=0;i<len;i+=4) {
+        if(flash_program(dst+i,data+i,4)!=0)return -1;
+        if(h.cfg_flash_hook)h.cfg_flash_hook(tag,i+4);
+    }
+    return 0;
+}
 int hal_cfg_erase(void)
 {
-    memset(host_cfg_memory(), 0xFF, HAL_CFG_SIZE);
+    cfg_erase_bytes(host_cfg_memory(),HAL_CFG_STORAGE_SIZE,"primary erase");
     h.flash_ops++;
     journal("cfg_erase");
     return 0;
 }
 
+void host_cfg_fail_writes(unsigned count) { h.cfg_write_failures = count; }
+
 int hal_cfg_write(uint32_t offset, const uint8_t *data, size_t len)
 {
-    if (offset + len > HAL_CFG_SIZE || (offset & 3u) || (len & 3u)) {
+    if (offset > HAL_CFG_STORAGE_SIZE || len > HAL_CFG_STORAGE_SIZE - offset || (offset & 3u) || (len & 3u)) {
         return -1;
     }
     h.flash_ops++;
-    return flash_program(host_cfg_memory() + offset, data, len);
+    if (h.cfg_write_failures) {
+        h.cfg_write_failures--;
+        return -1;
+    }
+    return cfg_program_bytes(host_cfg_memory() + offset, data, len,"primary write");
+}
+
+const uint8_t *hal_cfg_backup_base(void) { return h.bank[h.active_bank-1u] + HAL_CFG_BACKUP_OFFSET; }
+int hal_cfg_backup_erase(void) {
+    cfg_erase_bytes(h.bank[h.active_bank-1u]+HAL_CFG_BACKUP_OFFSET,HAL_CFG_BACKUP_SIZE,"backup erase");
+    h.flash_ops++; journal("cfg_backup_erase"); return 0;
+}
+int hal_cfg_backup_write(uint32_t offset,const uint8_t *data,size_t len) {
+    if (offset>HAL_CFG_BACKUP_SIZE || len>HAL_CFG_BACKUP_SIZE-offset || (offset&3u) || (len&3u)) return -1;
+    h.flash_ops++;
+    return cfg_program_bytes(h.bank[h.active_bank-1u]+HAL_CFG_BACKUP_OFFSET+offset,data,len,"backup write");
 }
 
 uint8_t *host_bank_memory(void) { return h.bank[2u - h.active_bank]; }
@@ -321,3 +360,12 @@ void host_set_optbytes(bool ndbank, bool ndboot, bool iwdg_sw)
 
 struct hal_optbytes hal_optbytes_read(void) { return h.opt; }
 unsigned host_flash_ops(void) { return h.flash_ops; }
+
+void host_psu_dac_fail(bool fail) {h.psu_dac_fail=fail;}
+bool hal_psu_dac_write(uint16_t code)
+{
+    uint8_t tx[3]={0,(uint8_t)(code>>8),(uint8_t)code};
+    journal("spia_mode 1");hal_gpio_write(4,4,false);
+    hal_spia_xfer(tx,NULL,3);hal_gpio_write(4,4,true);journal("spia_mode 0");
+    return !h.psu_dac_fail;
+}

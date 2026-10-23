@@ -84,6 +84,8 @@ class Handler(BaseHTTPRequestHandler):
                   "/commands.js": ("commands.js", "text/javascript"),
                   "/relays.js": ("relays.js", "text/javascript"),
                   "/sections.js": ("sections.js", "text/javascript"),
+                  "/dut.js": ("dut.js", "text/javascript"),
+                  "/psu.js": ("psu.js", "text/javascript"),
                   "/app.js": ("app.js", "text/javascript"), "/style.css": ("style.css", "text/css")}
         if path not in assets:
             return self._reply(404, {"error": "Страница не найдена"})

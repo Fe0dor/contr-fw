@@ -64,12 +64,14 @@ void cmd_route(struct cmdctx *c)
     bool replace = strcmp(c->cmd->name, "ROUT:SET") == 0;
     bool all_off = strcmp(c->cmd->name, "ROUT:LOW:ALL") == 0;
     uint32_t target[RELAY_WORDS] = {0};
+    uint32_t seen[RELAY_WORDS] = {0};
     if (!replace && !all_off) memcpy(target, desired.relays, sizeof target);
     for (int a = 0; a < c->argc; ++a) {
         const struct relay_desc *r = NULL;
         for (int i = 0; i < RELAY_COUNT; ++i)
             if (strcasecmp(c->argv[a], relay_table[i].name) == 0) { r = &relay_table[i]; break; }
-        if (!r) { resp_err(c, ERR_RANGE, NULL); return; }
+        if (!r || relays_bit(seen, r->number)) { resp_err(c, ERR_RANGE, NULL); return; }
+        bit_set(seen, r->number, true);
         bit_set(target, r->number, !low);
     }
     char fields[128];

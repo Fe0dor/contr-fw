@@ -11,8 +11,8 @@ _Min_Stack_Size = 0x1000;
 MEMORY
 {
   RAM   (xrw) : ORIGIN = 0x20000000, LENGTH = 512K
-  /* двухбанковый режим: образ в одном банке без хвоста 128 КБ под CFG (А10, А11) */
-  FLASH (rx)  : ORIGIN = 0x08000000, LENGTH = 896K
+  /* двухбанковый режим: образ в одном банке без хвоста 256 КБ под CFG и резерв (А10, А11) */
+  FLASH (rx)  : ORIGIN = 0x08000000, LENGTH = 768K
 }
 
 SECTIONS
